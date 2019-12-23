@@ -6,6 +6,7 @@ env:
   VIMREPO: https://hg.osdn.net/view/vim/vim
   MQREPO: http://hg.pf.osdn.net/view/k/k_/k_takata/vim-ktakata-mq
   HG: hg --config extensions.mq= --config "ui.username=%USERNAME% <%USERNAME%@%USERDOMAIN%>"
+  VCVARSALL: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat
 
 
 jobs:
@@ -36,7 +37,7 @@ jobs:
         ) else (
           set VCARCH=x86
         )
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" %VCARCH%
+        call "%VCVARSALL%" %VCARCH%
         cd vim\src
         rem Suppress progress animation
         sed -e "s/@<<$/@<< | sed -e 's#.*\\\\r.*##'/" Make_mvc.mak > Make_mvc2.mak

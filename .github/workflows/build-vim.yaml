@@ -16,6 +16,13 @@ jobs:
     strategy:
       matrix:
         arch: [x64, x86]
+        include:
+          - arch: x64
+            vcarch: amd64
+            bits: 64
+          - arch: x86
+            vcarch: x86
+            bits: 32
 
     steps:
     - uses: actions/checkout@v2
@@ -32,12 +39,7 @@ jobs:
     - name: Build
       shell: cmd
       run: |
-        if "${{ matrix.arch }}"=="x64" (
-          set VCARCH=amd64
-        ) else (
-          set VCARCH=x86
-        )
-        call "%VCVARSALL%" %VCARCH%
+        call "%VCVARSALL%" ${{ matrix.vcarch }}
         cd vim\src
         rem Suppress progress animation
         sed -e "s/@<<$/@<< | sed -e 's#.*\\\\r.*##'/" Make_mvc.mak > Make_mvc2.mak

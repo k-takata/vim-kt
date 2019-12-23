@@ -1,0 +1,31 @@
+name: Build Vim
+
+on: push
+
+env:
+  VIMREPO: https://hg.osdn.net/view/vim/vim
+  MQREPO: http://hg.pf.osdn.net/view/k/k_/k_takata/vim-ktakata-mq
+  HG: hg --config extensions.mq= --config "ui.username=%USERNAME% <%USERNAME%@%USERDOMAIN%>"
+
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        arch: [x64, x86]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Checkout Vim
+      shell: cmd
+      run: |
+        call %HG% qclone %VIMREPO% -p %MQREPO% vim
+        cd vim
+        hg log -v -r -1:-4
+        call %HG% qpush -a
+        cd ..
+
+# vim: ts=2 sw=2 sts=2 et

@@ -28,4 +28,21 @@ jobs:
         call %HG% qpush -a
         cd ..
 
+    - name: Build
+      shell: cmd
+      run: |
+        if "${{ matrix.arch }}"=="x64" (
+          set VCARCH=amd64
+        ) else (
+          set VCARCH=x86
+        )
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" %VCARCH%
+        cd vim\src
+        nmake -f Make_mvc.mak GUI=yes IME=yes ICONV=yes VIMDLL=yes
+        rem Show gvim version
+        start /wait .\gvim -u NONE -c "redir @a | ver | 0put a | wq!" ver.txt
+        type ver.txt
+        rem Show vim version
+        .\vim --version
+
 # vim: ts=2 sw=2 sts=2 et

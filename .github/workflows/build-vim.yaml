@@ -84,7 +84,7 @@ jobs:
       run: |
         call %HG% qclone %VIMREPO% -p %MQREPO% vim
         cd vim
-        hg log -v -r -1:-4
+        hg log -v -r -1:-4 --color=always
         call %HG% qpush -a
         cd ..
 

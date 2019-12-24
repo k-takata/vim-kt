@@ -139,6 +139,10 @@ jobs:
           DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_${{ matrix.bits }}_DIR% ^
           DYNAMIC_RUBY=yes RUBY=%RUBY_DIR% RUBY_MSVCRT_NAME=msvcrt ^
           || exit 1
+        if not exist vim${{ matrix.bits }}.dll (
+          echo Build failure.
+          exit 1
+        )
         cd po
         nmake -nologo -f Make_mvc.mak GETTEXT_PATH="\"C:\Program Files\Git\usr\bin\"" || exit 1
         nmake -nologo -f Make_mvc.mak install-all

@@ -186,4 +186,26 @@ jobs:
         cd package
         7z a vim-kt-win${{ matrix.bits }}.zip vim-kt
 
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1.0.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: true
+
+    - name: Upload Release Asset
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./package/vim-kt-win${{ matrix.bits }}.zip
+        asset_name: vim-kt-win${{ matrix.bits }}.zip
+        asset_content_type: application/zip
+
 # vim: ts=2 sw=2 sts=2 et

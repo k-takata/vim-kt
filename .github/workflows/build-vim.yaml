@@ -52,9 +52,10 @@ jobs:
     - name: Test
       shell: cmd
       run: |
+        call "%VCVARSALL%" ${{ matrix.vcarch }}
         cd vim\src
         echo gvim version
-        start /wait .\gvim -u NONE -c "redir @a | ver | 0put a | wq!" ver.txt
+        start /wait .\gvim -u NONE -c "redir @a | ver | put a | 1,3d | wq!" ver.txt
         type ver.txt || exit 1
         echo vim version
         .\vim --version || exit 1

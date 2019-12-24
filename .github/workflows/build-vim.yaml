@@ -220,7 +220,7 @@ jobs:
         cd package
         md artifacts
         7z a artifacts\vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}.zip vim-kt-win${{ matrix.bits }}
-        7z a artifacts\vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}-pdb.zip *.pdb
+        7z a artifacts\vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}-pdb.7z *.pdb
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v1
@@ -286,9 +286,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./vim-kt-win32/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win32-pdb.zip
-        asset_name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win32-pdb.zip
-        asset_content_type: application/zip
+        asset_path: ./vim-kt-win32/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win32-pdb.7z
+        asset_name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win32-pdb.7z
+        asset_content_type: application/x-7z-compressed
 
     - name: Upload Release Asset (win64)
       uses: actions/upload-release-asset@v1.0.1
@@ -308,8 +308,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./vim-kt-win64/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64-pdb.zip
-        asset_name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64-pdb.zip
-        asset_content_type: application/zip
+        asset_path: ./vim-kt-win64/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64-pdb.7z
+        asset_name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64-pdb.7z
+        asset_content_type: application/x-7z-compressed
 
 # vim: ts=2 sw=2 sts=2 et

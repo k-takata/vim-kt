@@ -141,6 +141,16 @@ jobs:
         nmake -nologo .config.h.time || exit 1
         xcopy /s .ext\include %RUBY_DIR%\include\ruby-%RUBY_API_VER_LONG%
 
+    - name: Update ja.po
+      shell: cmd
+      run: |
+        call "%VCVARSALL%" ${{ matrix.vcarch }}
+        copy /y contrib\lang-ja\src\po\ja.po vim\src\po
+        cd vim\src\po
+        cl sjiscorr.c
+        iconv -f utf-8 -t cp932 ja.po | sjiscorr | dos2unix > ja.sjis.po
+        iconv -f utf-8 -t euc-jp ja.po | sed -e "s/charset=[uU][tT][fF]-8/charset=euc-jp/" -e "s/# Original translations/# Generated from ja.po, DO NOT EDIT/" > ja.euc-jp.po
+
     - name: Build
       shell: cmd
       run: |

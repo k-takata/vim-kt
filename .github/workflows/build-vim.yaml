@@ -188,6 +188,7 @@ jobs:
       run: |
         set DEST=package\vim-kt-win${{ matrix.bits }}
         md %DEST%
+        copy vim\src\*.pdb     package
         copy vim\src\*vim.exe  %DEST%
         copy vim\src\vim*.dll  %DEST%
         copy vim\src\tee\*.exe %DEST%
@@ -199,13 +200,15 @@ jobs:
         if exist %GETTEXT_DIR%\libgcc_s_sjlj-1.dll copy %GETTEXT_DIR%\libgcc_s_sjlj-1.dll %DEST%
         xcopy vim\runtime %DEST%\runtime /Y /E /V /I /H /R /Q
         cd package
-        7z a vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}.zip vim-kt-win${{ matrix.bits }}
+        md artifacts
+        7z a artifacts\vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}.zip vim-kt-win${{ matrix.bits }}
+        7z a artifacts\vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}-pdb.zip *.pdb
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v1
       with:
         name: vim-kt-win${{ matrix.bits }}
-        path: ./package/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}.zip
+        path: ./package/artifacts
 
   release:
     runs-on: windows-latest
@@ -258,6 +261,17 @@ jobs:
         asset_name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win32.zip
         asset_content_type: application/zip
 
+    - name: Upload Release Asset (win32-pdb)
+      uses: actions/upload-release-asset@v1.0.1
+      if: startsWith(github.ref, 'refs/tags/v')
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./vim-kt-win32/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win32-pdb.zip
+        asset_name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win32-pdb.zip
+        asset_content_type: application/zip
+
     - name: Upload Release Asset (win64)
       uses: actions/upload-release-asset@v1.0.1
       if: startsWith(github.ref, 'refs/tags/v')
@@ -267,6 +281,17 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./vim-kt-win64/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64.zip
         asset_name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64.zip
+        asset_content_type: application/zip
+
+    - name: Upload Release Asset (win64-pdb)
+      uses: actions/upload-release-asset@v1.0.1
+      if: startsWith(github.ref, 'refs/tags/v')
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./vim-kt-win64/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64-pdb.zip
+        asset_name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64-pdb.zip
         asset_content_type: application/zip
 
 # vim: ts=2 sw=2 sts=2 et

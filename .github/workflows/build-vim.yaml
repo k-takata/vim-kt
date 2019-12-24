@@ -54,10 +54,15 @@ jobs:
       run: |
         call "%VCVARSALL%" ${{ matrix.vcarch }}
         cd vim\src
-        echo gvim version
+        echo.
+        echo gvim version:
         start /wait .\gvim -u NONE -c "redir @a | ver | put a | 1,3d | wq!" ver.txt
         type ver.txt || exit 1
-        echo vim version
+        start /wait .\gvim -u NONE -S ..\..\scripts\if_ver.vim -c quit
+        type if_ver.txt
+        echo vim version:
         .\vim --version || exit 1
+        .\vim --not-a-term -u NONE -S ..\..\scripts\if_ver.vim -c quit
+        type if_ver.txt
 
 # vim: ts=2 sw=2 sts=2 et

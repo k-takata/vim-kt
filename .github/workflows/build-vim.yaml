@@ -189,8 +189,23 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v1
       with:
-        name: vim-kt-win${{ matrix.bits }}.zip
+        name: vim-kt-win${{ matrix.bits }}
         path: ./package/vim-kt-win${{ matrix.bits }}.zip
+
+  release:
+    runs-on: windows-latest
+    needs: [build]
+
+    steps:
+    - name: Download Artifact (win32)
+      uses: actions/download-artifact@v1
+      with:
+        name: vim-kt-win32
+
+    - name: Download Artifact (win64)
+      uses: actions/download-artifact@v1
+      with:
+        name: vim-kt-win64
 
     - name: Create Release
       id: create_release
@@ -204,16 +219,26 @@ jobs:
         draft: false
         prerelease: true
 
-    - name: Upload Release Asset
-      id: upload-release-asset 
+    - name: Upload Release Asset (win32)
       uses: actions/upload-release-asset@v1.0.1
       if: startsWith(github.ref, 'refs/tags/v')
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./package/vim-kt-win${{ matrix.bits }}.zip
-        asset_name: vim-kt-win${{ matrix.bits }}.zip
+        asset_path: ./vim-kt-win32/vim-kt-win32.zip
+        asset_name: vim-kt-win32.zip
+        asset_content_type: application/zip
+
+    - name: Upload Release Asset (win64)
+      uses: actions/upload-release-asset@v1.0.1
+      if: startsWith(github.ref, 'refs/tags/v')
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./vim-kt-win64/vim-kt-win64.zip
+        asset_name: vim-kt-win64.zip
         asset_content_type: application/zip
 
 # vim: ts=2 sw=2 sts=2 et

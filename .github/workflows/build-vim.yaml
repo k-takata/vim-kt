@@ -74,6 +74,10 @@ jobs:
         )
 
     - uses: actions/checkout@v2
+    - name: Checkout submodules
+      shell: cmd
+      run: |
+        git submodule update --init --depth=1
 
     - name: Checkout Vim
       shell: cmd
@@ -199,6 +203,10 @@ jobs:
         copy %GETTEXT_DIR%\libintl-8.dll  %DEST%
         if exist %GETTEXT_DIR%\libgcc_s_sjlj-1.dll copy %GETTEXT_DIR%\libgcc_s_sjlj-1.dll %DEST%
         xcopy vim\runtime %DEST%\runtime /Y /E /V /I /H /R /Q
+        md %DEST%\runtime\pack\dist-kt\start
+        :: Don't copy hidden files
+        xcopy contrib\autofmt   %DEST%\runtime\pack\dist-kt\start\autofmt   /Y /E /V /I /R /Q
+        xcopy contrib\vimdoc-ja %DEST%\runtime\pack\dist-kt\start\vimdoc-ja /Y /E /V /I /R /Q
         cd package
         md artifacts
         7z a artifacts\vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}.zip vim-kt-win${{ matrix.bits }}

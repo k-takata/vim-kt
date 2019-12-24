@@ -1,0 +1,6 @@
+[submodule "contrib/autofmt"]
+	path = contrib/autofmt
+	url = https://github.com/vim-jp/autofmt.git
+[submodule "contrib/vimdoc-ja"]
+	path = contrib/vimdoc-ja
+	url = https://github.com/vim-jp/vimdoc-ja.git

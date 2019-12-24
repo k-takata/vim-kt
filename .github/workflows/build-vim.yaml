@@ -170,4 +170,20 @@ jobs:
         :: echo Test vim:
         :: nmake -nologo -f Make_dos.mak VIMPROG=..\vim  || exit 1
 
+    - name: Package
+      shell: cmd
+      run: |
+        set DEST=package\vim-kt
+        md %DEST%
+        copy vim\src\*vim.exe %DEST%
+        copy vim\src\vim*.dll %DEST%
+        copy vim\src\winpty*  %DEST%
+        copy %LUA_DIR%\lua*.dll %DEST%
+        copy %GETTEXT_DIR%\libiconv-2.dll %DEST%
+        copy %GETTEXT_DIR%\libintl-8.dll  %DEST%
+        if exist %GETTEXT_DIR%\libgcc_s_sjlj-1.dll copy %GETTEXT_DIR%\libgcc_s_sjlj-1.dll %DEST%
+        xcopy vim\runtime %DEST%\runtime /Y /E /V /I /H /R /Q
+        cd package
+        7z a vim-kt-win${{ matrix.bits }}.zip vim-kt
+
 # vim: ts=2 sw=2 sts=2 et

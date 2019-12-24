@@ -8,6 +8,39 @@ env:
   HG: hg --config extensions.mq= --config "ui.username=%USERNAME% <%USERNAME%@%USERDOMAIN%>"
   VCVARSALL: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat
 
+  # Interfaces
+  # Lua
+  LUA_VER: 53
+  LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-5.3.5_Win32_dllw6_lib.zip
+  LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-5.3.5_Win64_dllw6_lib.zip
+  LUA_DIR: D:\Lua
+  # Perl
+  PERL_VER: 528
+  PERL32_URL: http://strawberryperl.com/download/5.28.0.1/strawberry-perl-5.28.0.1-32bit-portable.zip
+  PERL64_URL: http://strawberryperl.com/download/5.28.0.1/strawberry-perl-5.28.0.1-64bit-portable.zip
+  PERL_DIR: D:\Strawberry\perl
+  # Python 3
+  PYTHON3_VER: 38
+  PYTHON3_32_DIR: C:\hostedtoolcache\windows\Python\3.8.0\x86
+  PYTHON3_64_DIR: C:\hostedtoolcache\windows\Python\3.8.0\x64
+  # Ruby
+  RUBY_VER: 26
+  RUBY_API_VER_LONG: 2.6.0
+  RUBY_BRANCH: ruby_2_6
+  RUBY_SRC_URL: https://github.com/ruby/ruby/archive/%RUBY_BRANCH%.zip
+  RUBY32_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-2.6.5-1/rubyinstaller-2.6.5-1-x86.7z
+  RUBY64_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-2.6.5-1/rubyinstaller-2.6.5-1-x64.7z
+  RUBY32_DIR: D:\rubyinstaller-2.6.5-1-x86
+  RUBY64_DIR: D:\rubyinstaller-2.6.5-1-x64
+  RUBY_DIR: D:\rubyinstaller
+
+  # Other dependencies
+  # gettext
+  GETTEXT32_URL: https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.19.8.1-v1.15/gettext0.19.8.1-iconv1.15-shared-32.zip
+  GETTEXT64_URL: https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.19.8.1-v1.15/gettext0.19.8.1-iconv1.15-shared-64.zip
+  GETTEXT_DIR: D:\gettext
+  # winpty
+  WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
 
 jobs:
   build:
@@ -19,9 +52,11 @@ jobs:
         include:
           - arch: x64
             vcarch: amd64
+            warch: x64
             bits: 64
           - arch: x86
             vcarch: x86
+            warch: ia32
             bits: 32
 
     steps:
@@ -36,6 +71,59 @@ jobs:
         call %HG% qpush -a
         cd ..
 
+    - name: Download dependencies
+      shell: cmd
+      run: |
+        path C:\Program Files\7-Zip;%path%
+
+        echo Download Lua
+        call :downloadfile %LUA${{ matrix.bits }}_URL% downloads\lua.zip
+        7z x downloads\lua.zip -o%LUA_DIR% > nul || exit 1
+
+        echo Download Perl
+        call :downloadfile %PERL${{ matrix.bits }}_URL% downloads\perl.zip
+        :: Extract only the "perl" folder.
+        7z x downloads\perl.zip perl -o%PERL_DIR%\.. > nul || exit 1
+
+        echo Download Ruby
+        call :downloadfile %RUBY${{ matrix.bits }}_URL% downloads\ruby.zip
+        7z x downloads\ruby.zip -oD:\ > nul || exit 1
+        move %RUBY${{ matrix.bits }}_DIR% %RUBY_DIR%
+
+        echo Download Ruby source
+        call :downloadfile %RUBY_SRC_URL% downloads\ruby_src.zip
+        :: Extract the files only we needed to reduce the building time.
+        7z x downloads\ruby_src.zip */bin */enc/Makefile.in */win32 */common.mk -ir!version.h -xr!README.* -xr!*/win32/*.c -xr!*/win32/*.h -o.. > nul || exit 1
+        move ..\ruby-%RUBY_BRANCH% ..\ruby > nul || exit 1
+
+        echo Download gettext
+        call :downloadfile %GETTEXT${{ matrix.bits }}_URL% downloads\gettext.zip
+        7z e -y downloads\gettext.zip -o%GETTEXT_DIR% > nul || exit 1
+
+        echo Download winpty
+        call :downloadfile %WINPTY_URL% downloads\winpty.zip
+        7z x -y downloads\winpty.zip -oD:\winpty > nul || exit 1
+        copy /Y D:\winpty\${{ matrix.warch }}\bin\winpty.dll        vim\src\winpty${{ matrix.bits }}.dll
+        copy /Y D:\winpty\${{ matrix.warch }}\bin\winpty-agent.exe  vim\src\
+
+        goto :eof
+
+        :downloadfile
+        :: call :downloadfile <URL> <localfile>
+        if not exist %2 (
+          curl -f -L %1 -o %2 || exit 1
+        )
+        goto :eof
+
+    - name: Create Ruby's config.h
+      shell: cmd
+      run: |
+        call "%VCVARSALL%" ${{ matrix.vcarch }}
+        cd ..\ruby
+        call win32\configure.bat
+        nmake -nologo .config.h.time || exit 1
+        xcopy /s .ext\include %RUBY_DIR%\include\ruby-%RUBY_API_VER_LONG%
+
     - name: Build
       shell: cmd
       run: |
@@ -44,14 +132,21 @@ jobs:
         rem Suppress progress animation
         sed -e "s/@<<$/@<< | sed -e 's#.*\\\\r.*##'/" Make_mvc.mak > Make_mvc2.mak
         rem Build gvim/vim with VIMDLL
-        nmake -f Make_mvc2.mak GUI=yes IME=yes ICONV=yes VIMDLL=yes || exit 1
+        nmake -nologo -f Make_mvc2.mak ^
+          GUI=yes IME=yes ICONV=yes VIMDLL=yes ^
+          DYNAMIC_LUA=yes LUA=%LUA_DIR% ^
+          DYNAMIC_PERL=yes PERL=%PERL_DIR% ^
+          DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_${{ matrix.bits }}_DIR% ^
+          DYNAMIC_RUBY=yes RUBY=%RUBY_DIR% RUBY_MSVCRT_NAME=msvcrt ^
+          || exit 1
         cd po
-        nmake -f Make_mvc.mak GETTEXT_PATH="\"C:\Program Files\Git\usr\bin\"" || exit 1
-        nmake -f Make_mvc.mak install-all
+        nmake -nologo -f Make_mvc.mak GETTEXT_PATH="\"C:\Program Files\Git\usr\bin\"" || exit 1
+        nmake -nologo -f Make_mvc.mak install-all
 
     - name: Test
       shell: cmd
       run: |
+        path %LUA_DIR%;%PERL_DIR%\bin;%PYTHON3_${{ matrix.bits }}_DIR%;%RUBY_DIR%\bin;%RUBY_DIR%\bin\ruby_builtin_dlls;%GETTEXT_DIR%;%path%
         call "%VCVARSALL%" ${{ matrix.vcarch }}
         cd vim\src
         echo.

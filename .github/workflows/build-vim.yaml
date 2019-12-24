@@ -186,7 +186,7 @@ jobs:
     - name: Package
       shell: cmd
       run: |
-        set DEST=package\vim-kt
+        set DEST=package\vim-kt-win${{ matrix.bits }}
         md %DEST%
         copy vim\src\*vim.exe %DEST%
         copy vim\src\vim*.dll %DEST%
@@ -197,12 +197,12 @@ jobs:
         if exist %GETTEXT_DIR%\libgcc_s_sjlj-1.dll copy %GETTEXT_DIR%\libgcc_s_sjlj-1.dll %DEST%
         xcopy vim\runtime %DEST%\runtime /Y /E /V /I /H /R /Q
         cd package
-        7z a vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}.zip vim-kt
+        7z a vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}.zip vim-kt-win${{ matrix.bits }}
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v1
       with:
-        name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}
+        name: vim-kt-win${{ matrix.bits }}
         path: ./package/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}.zip
 
   release:
@@ -226,12 +226,12 @@ jobs:
     - name: Download Artifact (win32)
       uses: actions/download-artifact@v1
       with:
-        name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win32
+        name: vim-kt-win32
 
     - name: Download Artifact (win64)
       uses: actions/download-artifact@v1
       with:
-        name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64
+        name: vim-kt-win64
 
     - name: Create Release
       id: create_release
@@ -252,7 +252,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win32/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win32.zip
+        asset_path: ./vim-kt-win32/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win32.zip
         asset_name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win32.zip
         asset_content_type: application/zip
 
@@ -263,7 +263,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64.zip
+        asset_path: ./vim-kt-win64/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64.zip
         asset_name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64.zip
         asset_content_type: application/zip
 

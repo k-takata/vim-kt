@@ -186,6 +186,12 @@ jobs:
         cd package
         7z a vim-kt-win${{ matrix.bits }}.zip vim-kt
 
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: vim-kt-win${{ matrix.bits }}.zip
+        path: ./package/vim-kt-win${{ matrix.bits }}.zip
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1.0.0

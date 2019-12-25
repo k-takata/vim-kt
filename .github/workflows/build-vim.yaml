@@ -78,7 +78,7 @@ jobs:
     - name: Checkout submodules
       shell: cmd
       run: |
-        git submodule update --init --depth=1
+        git submodule update --init
 
     - name: Checkout Vim
       shell: cmd

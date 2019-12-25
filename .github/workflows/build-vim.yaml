@@ -1,6 +1,6 @@
 name: Build Vim
 
-on: push
+on: [push, pull_request]
 
 env:
   VIMREPO: https://hg.osdn.net/view/vim/vim

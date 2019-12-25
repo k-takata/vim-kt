@@ -207,7 +207,7 @@ jobs:
         set DEST=package\vim-kt-win${{ matrix.bits }}
         md %DEST%
         copy vim\src\*.pdb     package
-        copy vim\src\*vim.exe  %DEST%
+        copy vim\src\*vim*.exe %DEST%
         copy vim\src\vim*.dll  %DEST%
         copy vim\src\tee\*.exe %DEST%
         copy vim\src\xxd\*.exe %DEST%

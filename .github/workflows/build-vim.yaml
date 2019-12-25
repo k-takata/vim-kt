@@ -7,6 +7,7 @@ env:
   MQREPO: http://hg.pf.osdn.net/view/k/k_/k_takata/vim-ktakata-mq
   HG: hg --config extensions.mq= --config "ui.username=%USERNAME% <%USERNAME%@%USERDOMAIN%>"
   VCVARSALL: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat
+  GITBIN: C:\Program Files\Git\usr\bin
 
   # Interfaces
   # Lua
@@ -69,7 +70,7 @@ jobs:
         ) else (
           echo ::set-output name=ref::%GITHUB_REF:refs/tags/v=%
         )
-        for /f %%i in ('"C:\Program Files\Git\usr\bin\date.exe" +%%Y%%m%%d') do (
+        for /f %%i in ('"%GITBIN%\date.exe" +%%Y%%m%%d') do (
           echo ::set-output name=date::%%i
         )
 
@@ -171,7 +172,7 @@ jobs:
           exit 1
         )
         cd po
-        nmake -nologo -f Make_mvc.mak GETTEXT_PATH="\"C:\Program Files\Git\usr\bin\"" || exit 1
+        nmake -nologo -f Make_mvc.mak GETTEXT_PATH="\"%GITBIN%\"" || exit 1
         nmake -nologo -f Make_mvc.mak install-all
 
     - name: Test

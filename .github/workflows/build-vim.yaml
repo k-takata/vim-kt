@@ -195,11 +195,11 @@ jobs:
         .\vim --not-a-term -u NONE -S ..\..\scripts\if_ver.vim -c quit
         type if_ver.txt
         cd testdir
-        :: echo Test gvim:
-        :: nmake -nologo -f Make_dos.mak VIMPROG=..\gvim || exit 1
-        :: nmake -nologo -f Make_dos.mak clean
-        :: echo Test vim:
-        :: nmake -nologo -f Make_dos.mak VIMPROG=..\vim  || exit 1
+        echo Test gvim:
+        nmake -nologo -f Make_dos.mak VIMPROG=..\gvim || exit 1
+        nmake -nologo -f Make_dos.mak clean
+        echo Test vim:
+        nmake -nologo -f Make_dos.mak VIMPROG=..\vim  || exit 1
 
     - name: Package
       shell: cmd

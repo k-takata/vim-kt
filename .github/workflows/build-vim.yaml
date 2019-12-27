@@ -103,6 +103,15 @@ jobs:
         call %HG% qpush -a
         cd ..
 
+    - name: Get changelog
+      shell: bash
+      run: |
+        cd vim
+        latest=$(hg log -r "last(tag('re:^v\d'))" -T "{tags}\n")
+        mkdir ../package/artifacts
+        hg log -v -r $latest:$(cat ../vimver-old.txt) | sed -n -e 's/[][_*^<`\\]/\\&/g' -e 's/^patch /* /p' | sed -e ':a;N;$!ba;s/\n/\\n/g' > ../package/artifacts/changelog.txt
+        cat ../package/artifacts/changelog.txt
+
     - name: Create a list of download URLs
       shell: cmd
       run: |
@@ -253,7 +262,7 @@ jobs:
         xcopy contrib\autofmt   %DEST%\runtime\pack\dist-kt\start\autofmt   /Y /E /V /I /R /Q
         xcopy contrib\vimdoc-ja %DEST%\runtime\pack\dist-kt\start\vimdoc-ja /Y /E /V /I /R /Q
         cd package
-        md artifacts
+        rem md artifacts
         set BASENAME=vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}
         7z a artifacts\%BASENAME%.zip vim-kt-win${{ matrix.bits }}
         7z a artifacts\%BASENAME%.7z  vim-kt-win${{ matrix.bits }}
@@ -293,6 +302,13 @@ jobs:
       with:
         name: vim-kt-win64
 
+    - name: Get changelog
+      id: changelog
+      shell: cmd
+      run: |
+        for /f "delims=" %%i in (vim-kt-win64\changelog.txt) do set CHANGELOG=%%i
+        echo ::set-output name=log::%CHANGELOG%
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1.0.0
@@ -302,6 +318,8 @@ jobs:
       with:
         tag_name: ${{ github.ref }}
         release_name: ${{ github.ref }}
+        body: |
+          ${{ steps.changelog.outputs.log }}
         draft: false
         prerelease: true
 

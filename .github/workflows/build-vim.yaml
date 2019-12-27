@@ -319,7 +319,16 @@ jobs:
         tag_name: ${{ github.ref }}
         release_name: ${{ github.ref }}
         body: |
+          ### Changes:
+
           ${{ steps.changelog.outputs.log }}
+
+          ### Compiled with:
+
+          * [Strawberry Perl](http://strawberryperl.com/) 5.28
+          * [LuaBinaries](http://luabinaries.sourceforge.net/download.html) 5.3
+          * [Python3](https://www.python.org/downloads/) 3.8
+          * [RubyInstaller2](http://rubyinstaller.org/downloads/) 2.6
         draft: false
         prerelease: true
 

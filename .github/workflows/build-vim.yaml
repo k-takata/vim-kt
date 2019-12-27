@@ -103,6 +103,22 @@ jobs:
         call %HG% qpush -a
         cd ..
 
+    - name: Create a list of download URLs
+      shell: cmd
+      run: |
+        type NUL > urls.txt
+        echo %LUA${{ matrix.bits }}_URL%>> urls.txt
+        echo %PERL${{ matrix.bits }}_URL%>> urls.txt
+        echo %RUBY${{ matrix.bits }}_URL%>> urls.txt
+        echo %GETTEXT${{ matrix.bits }}_URL%>> urls.txt
+        echo %WINPTY_URL%>> urls.txt
+
+    - name: Cache downloaded files
+      uses: actions/cache@v1
+      with:
+        path: downloads
+        key: ${{ runner.os }}-${{ matrix.bits }}-${{ hashFiles('urls.txt') }}
+
     - name: Download dependencies
       shell: cmd
       run: |

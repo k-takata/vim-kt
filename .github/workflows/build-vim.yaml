@@ -288,7 +288,7 @@ jobs:
         ) else (
           echo ::set-output name=ref::%GITHUB_REF:refs/tags/v=%
         )
-        for /f %%i in ('"C:\Program Files\Git\usr\bin\date.exe" +%%Y%%m%%d') do (
+        for /f %%i in ('"%GITBIN%\date.exe" +%%Y%%m%%d') do (
           echo ::set-output name=date::%%i
         )
 

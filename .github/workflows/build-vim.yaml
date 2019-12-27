@@ -121,7 +121,8 @@ jobs:
         echo "::set-output name=ref::${latest#v}"
         mkdir ../package/artifacts
         echo $latest > ../package/artifacts/latest.txt
-        hg log -v -r $latest:$(cat ../vimver.txt) | sed -n -e 's/[][_*^<`\\]/\\&/g' -e 's/%/%25/g' -e 's/^patch /* /p' | sed -e ':a;N;$!ba;s/\n/%0A/g' > ../package/artifacts/changelog.txt
+        vimver=$(cat ../vimver.txt)
+        hg log -v -r "$latest:$vimver - $vimver" | sed -n -e 's/[][_*^<`\\]/\\&/g' -e 's/%/%25/g' -e 's/^patch /* /p' | sed -e ':a;N;$!ba;s/\n/%0A/g' > ../package/artifacts/changelog.txt
         cat ../package/artifacts/changelog.txt
 
     - name: Create a list of download URLs

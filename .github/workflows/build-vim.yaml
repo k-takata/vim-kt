@@ -1,6 +1,12 @@
 name: Build Vim
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  #pull_request:
+  schedule:
+    - cron: '0 0 * * *'
 
 env:
   VIMREPO: https://hg.osdn.net/view/vim/vim
@@ -65,11 +71,6 @@ jobs:
       id: init
       shell: cmd
       run: |
-        if "%GITHUB_REF:~,11%"=="refs/heads/" (
-          echo ::set-output name=ref::%GITHUB_REF:refs/heads/=%
-        ) else (
-          echo ::set-output name=ref::%GITHUB_REF:refs/tags/v=%
-        )
         for /f %%i in ('"%GITBIN%\date.exe" +%%Y%%m%%d') do (
           echo ::set-output name=date::%%i
         )
@@ -79,6 +80,14 @@ jobs:
       shell: cmd
       run: |
         git submodule update --init
+
+    - name: Update submodules
+      shell: cmd
+      run: |
+        for /d %%i in (contrib\*) do (
+          git -C %%i checkout master
+          git -C %%i pull --ff-only
+        )
 
 #    # See: https://github.com/nelsonjchen/reverse-rdp-windows-github-actions
 #    - name: Enable RDP
@@ -104,12 +113,15 @@ jobs:
         cd ..
 
     - name: Get changelog
+      id: changelog
       shell: bash
       run: |
         cd vim
         latest=$(hg log -r "last(tag('re:^v\d'))" -T "{tags}\n")
+        echo "::set-output name=ref::${latest#v}"
         mkdir ../package/artifacts
-        hg log -v -r $latest:$(cat ../vimver-old.txt) | sed -n -e 's/[][_*^<`\\]/\\&/g' -e 's/%/%25/g' -e 's/^patch /* /p' | sed -e ':a;N;$!ba;s/\n/%0A/g' > ../package/artifacts/changelog.txt
+        echo $latest > ../package/artifacts/latest.txt
+        hg log -v -r $latest:$(cat ../vimver.txt) | sed -n -e 's/[][_*^<`\\]/\\&/g' -e 's/%/%25/g' -e 's/^patch /* /p' | sed -e ':a;N;$!ba;s/\n/%0A/g' > ../package/artifacts/changelog.txt
         cat ../package/artifacts/changelog.txt
 
     - name: Create a list of download URLs
@@ -263,7 +275,7 @@ jobs:
         xcopy contrib\vimdoc-ja %DEST%\runtime\pack\dist-kt\start\vimdoc-ja /Y /E /V /I /R /Q
         cd package
         rem md artifacts
-        set BASENAME=vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}
+        set BASENAME=vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}
         7z a artifacts\%BASENAME%.zip vim-kt-win${{ matrix.bits }}
         7z a artifacts\%BASENAME%.7z  vim-kt-win${{ matrix.bits }}
         7z a artifacts\%BASENAME%-pdb.7z *.pdb
@@ -283,13 +295,22 @@ jobs:
       id: init
       shell: cmd
       run: |
-        if "%GITHUB_REF:~,11%"=="refs/heads/" (
-          echo ::set-output name=ref::%GITHUB_REF:refs/heads/=%
-        ) else (
-          echo ::set-output name=ref::%GITHUB_REF:refs/tags/v=%
-        )
         for /f %%i in ('"%GITBIN%\date.exe" +%%Y%%m%%d') do (
           echo ::set-output name=date::%%i
+        )
+
+    - uses: actions/checkout@v2
+    - name: Checkout submodules
+      shell: cmd
+      run: |
+        git submodule update --init
+
+    - name: Update submodules
+      shell: cmd
+      run: |
+        for /d %%i in (contrib\*) do (
+          git -C %%i checkout master
+          git -C %%i pull --ff-only
         )
 
     - name: Download Artifact (win32)
@@ -308,16 +329,40 @@ jobs:
       run: |
         for /f "delims=" %%i in (vim-kt-win64\changelog.txt) do set CHANGELOG=%%i
         echo ::set-output name=log::%CHANGELOG%
+        for /f "delims=" %%i in (vim-kt-win64\latest.txt) do set LATEST=%%i
+        echo ::set-output name=ref::%LATEST:~1%
+        echo %LATEST%> vimver.txt
+
+    - name: Commit and push
+      id: commit
+      shell: cmd
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git diff --quiet HEAD
+        if ERRORLEVEL 1 (
+          git remote set-url --push origin https://%GITHUB_ACTOR%:%GITHUB_TOKEN%@github.com/%GITHUB_REPOSITORY%.git
+          git config --local user.name "vim-kt CI"
+          git config --local user.email "k-takata@users.noreply.github.com"
+          git commit -a -m "Update Vim to v${{ steps.changelog.outputs.ref }}"
+          git tag "v${{ steps.changelog.outputs.ref }}" || exit 1
+          git push --tags
+          git push
+          echo ::set-output name=skip::no
+        ) else (
+          echo No updates.
+          echo ::set-output name=skip::yes
+        )
 
     - name: Create Release
       id: create_release
       uses: actions/create-release@master
-      if: startsWith(github.ref, 'refs/tags/v')
+      if: steps.commit.outputs.skip == 'no'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref }}
+        tag_name: v${{ steps.changelog.outputs.ref }}
+        release_name:  v${{ steps.changelog.outputs.ref }}
         body: |
           ### Changes:
 
@@ -334,68 +379,68 @@ jobs:
 
     - name: Upload Release Asset (win32)
       uses: actions/upload-release-asset@v1.0.1
-      if: startsWith(github.ref, 'refs/tags/v')
+      if: steps.commit.outputs.skip == 'no'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./vim-kt-win32/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win32.zip
-        asset_name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win32.zip
+        asset_path: ./vim-kt-win32/vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win32.zip
+        asset_name: vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win32.zip
         asset_content_type: application/zip
 
     - name: Upload Release Asset (win32-7z)
       uses: actions/upload-release-asset@v1.0.1
-      if: startsWith(github.ref, 'refs/tags/v')
+      if: steps.commit.outputs.skip == 'no'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./vim-kt-win32/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win32.7z
-        asset_name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win32.7z
+        asset_path: ./vim-kt-win32/vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win32.7z
+        asset_name: vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win32.7z
         asset_content_type: application/x-7z-compressed
 
     - name: Upload Release Asset (win32-pdb)
       uses: actions/upload-release-asset@v1.0.1
-      if: startsWith(github.ref, 'refs/tags/v')
+      if: steps.commit.outputs.skip == 'no'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./vim-kt-win32/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win32-pdb.7z
-        asset_name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win32-pdb.7z
+        asset_path: ./vim-kt-win32/vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win32-pdb.7z
+        asset_name: vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win32-pdb.7z
         asset_content_type: application/x-7z-compressed
 
     - name: Upload Release Asset (win64)
       uses: actions/upload-release-asset@v1.0.1
-      if: startsWith(github.ref, 'refs/tags/v')
+      if: steps.commit.outputs.skip == 'no'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./vim-kt-win64/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64.zip
-        asset_name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64.zip
+        asset_path: ./vim-kt-win64/vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win64.zip
+        asset_name: vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win64.zip
         asset_content_type: application/zip
 
     - name: Upload Release Asset (win64-7z)
       uses: actions/upload-release-asset@v1.0.1
-      if: startsWith(github.ref, 'refs/tags/v')
+      if: steps.commit.outputs.skip == 'no'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./vim-kt-win64/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64.7z
-        asset_name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64.7z
+        asset_path: ./vim-kt-win64/vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win64.7z
+        asset_name: vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win64.7z
         asset_content_type: application/x-7z-compressed
 
     - name: Upload Release Asset (win64-pdb)
       uses: actions/upload-release-asset@v1.0.1
-      if: startsWith(github.ref, 'refs/tags/v')
+      if: steps.commit.outputs.skip == 'no'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./vim-kt-win64/vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64-pdb.7z
-        asset_name: vim-kt-${{ steps.init.outputs.ref }}-${{ steps.init.outputs.date }}-win64-pdb.7z
+        asset_path: ./vim-kt-win64/vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win64-pdb.7z
+        asset_name: vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win64-pdb.7z
         asset_content_type: application/x-7z-compressed
 
 # vim: ts=2 sw=2 sts=2 et

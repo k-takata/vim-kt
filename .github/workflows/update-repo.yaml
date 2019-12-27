@@ -1,0 +1,63 @@
+name: Update repo
+
+on:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: '0 0 * * *'
+
+env:
+  VIMREPO: https://hg.osdn.net/view/vim/vim
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || !contains(github.event.commits[0].author.name, 'vim-kt CI')
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Checkout submodules
+      run: |
+        git submodule update --init
+
+    - name: Update submodules
+      run: |
+        for d in contrib/*/; do
+          (
+            cd $d
+            git checkout master
+            git pull --ff-only
+          )
+        done
+
+    - name: Checkout Vim
+      run: |
+        hg clone $VIMREPO vim
+
+    - name: Check Vim version
+      run: |
+        vimver=$(hg --cwd vim log -r "last(tag('re:^v\d'))" -T "{tags}\n")
+        if [ "$(cat vimver-new.txt)" != "$vimver" ]; then
+          cp vimver-new.txt vimver-old.txt
+          echo $vimver > vimver-new.txt
+        fi
+
+    - name: Commit and push
+      run: |
+        if ! git diff --quiet HEAD; then
+          git remote set-url --push origin https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          git config --local user.name 'vim-kt CI'
+          git config --local user.email 'k-takata@users.noreply.github.com'
+          git commit -a -m "Update Vim to $(cat vimver-new.txt)"
+          git tag "$(cat vimver-new.txt)"
+          git push --tags
+          git push
+        else
+          echo 'No updates.'
+        fi
+
+# vim: ts=2 sw=2 sts=2 et

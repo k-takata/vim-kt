@@ -8,7 +8,7 @@ Go to the [releases](https://github.com/k-takata/vim-kt/releases) page to downlo
 
 This provides only 7-Zip and zip packages. If you want to use an installer, go to [vim-win32-installer](https://github.com/vim/vim-win32-installer).
 
-# Differences from the official package
+## Differences from the official package
 
 This package has some differences from the official package.
 
@@ -17,14 +17,14 @@ This package has some differences from the official package.
 * My private patches are applied.
 * Includes some plugins for Japanese users.
 
-# Source codes and patches
+## Source codes and patches
 
 The following source codes and patches are used to build this package:
 
 * [The official mercurial mirror](https://hg.osdn.net/view/vim/vim)
 * [vim-ktakata-mq](https://osdn.net/users/k_takata/pf/vim-ktakata-mq/wiki/FrontPage)
 
-# Interfaces
+## Interfaces
 
 The following interfaces are enabled:
 
@@ -35,7 +35,7 @@ The following interfaces are enabled:
 
 Perl, Python3 and Ruby are not included in this package. If you want use them, install the official binaries from the above sites.
 
-# Plugins
+## Plugins
 
 The following plugins are included and enabled:
 

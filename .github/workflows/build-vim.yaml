@@ -122,10 +122,24 @@ jobs:
         mkdir ../package/artifacts
         echo $latest > ../package/artifacts/latest.txt
         vimver=$(cat ../vimver.txt)
+        cp ../package/artifacts/latest.txt ../vimver.txt
         hg log -v -r "$latest:$vimver - $vimver" | sed -n -e 's/[][_*^<`\\]/\\&/g' -e 's/%/%25/g' -e 's/^patch /* /p' | sed -e ':a;N;$!ba;s/\n/%0A/g' > ../package/artifacts/changelog.txt
         cat ../package/artifacts/changelog.txt
 
+    - name: Check changes
+      id: check
+      shell: cmd
+      run: |
+        git diff --quiet HEAD
+        if ERRORLEVEL 1 (
+          echo ::set-output name=skip::no
+        ) else (
+          echo No updates.
+          echo ::set-output name=skip::yes
+        )
+
     - name: Create a list of download URLs
+      if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
         type NUL > urls.txt
@@ -136,12 +150,14 @@ jobs:
         echo %WINPTY_URL%>> urls.txt
 
     - name: Cache downloaded files
+      if: steps.check.outputs.skip == 'no'
       uses: actions/cache@v1
       with:
         path: downloads
         key: ${{ runner.os }}-${{ matrix.bits }}-${{ hashFiles('urls.txt') }}
 
     - name: Download dependencies
+      if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
         path C:\Program Files\7-Zip;%path%
@@ -186,6 +202,7 @@ jobs:
         goto :eof
 
     - name: Create Ruby's config.h
+      if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
         call "%VCVARSALL%" ${{ matrix.vcarch }}
@@ -195,6 +212,7 @@ jobs:
         xcopy /s .ext\include %RUBY_DIR%\include\ruby-%RUBY_API_VER_LONG%
 
     - name: Update ja.po
+      if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
         call "%VCVARSALL%" ${{ matrix.vcarch }}
@@ -205,6 +223,7 @@ jobs:
         iconv -f utf-8 -t euc-jp ja.po | sed -e "s/charset=[uU][tT][fF]-8/charset=euc-jp/" -e "s/# Original translations/# Generated from ja.po, DO NOT EDIT/" > ja.euc-jp.po
 
     - name: Build
+      if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
         call "%VCVARSALL%" ${{ matrix.vcarch }}
@@ -231,6 +250,7 @@ jobs:
         nmake -nologo -f Make_mvc.mak install-all
 
     - name: Test
+      if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
         path %LUA_DIR%;%PERL_DIR%\bin;%PYTHON3_${{ matrix.bits }}_DIR%;%RUBY_DIR%\bin;%RUBY_DIR%\bin\ruby_builtin_dlls;%GETTEXT_DIR%;%path%
@@ -255,6 +275,7 @@ jobs:
         nmake -nologo -f Make_dos.mak report || exit 1
 
     - name: Package
+      if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
         set DEST=package\vim-kt-win${{ matrix.bits }}

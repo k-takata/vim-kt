@@ -18,20 +18,24 @@ env:
   # Interfaces
   # Lua
   LUA_VER: 53
+  LUA_VER_DOT: 5.3
   LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-5.3.5_Win32_dllw6_lib.zip
   LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-5.3.5_Win64_dllw6_lib.zip
   LUA_DIR: D:\Lua
   # Perl
   PERL_VER: 528
+  PERL_VER_DOT: 5.28
   PERL32_URL: http://strawberryperl.com/download/5.28.0.1/strawberry-perl-5.28.0.1-32bit-portable.zip
   PERL64_URL: http://strawberryperl.com/download/5.28.0.1/strawberry-perl-5.28.0.1-64bit-portable.zip
   PERL_DIR: D:\Strawberry\perl
   # Python 3
   PYTHON3_VER: 38
+  PYTHON3_VER_DOT: 3.8
   PYTHON3_32_DIR: C:\hostedtoolcache\windows\Python\3.8.0\x86
   PYTHON3_64_DIR: C:\hostedtoolcache\windows\Python\3.8.0\x64
   # Ruby
   RUBY_VER: 26
+  RUBY_VER_DOT: 2.6
   RUBY_API_VER_LONG: 2.6.0
   RUBY_BRANCH: ruby_2_6
   RUBY_SRC_URL: https://github.com/ruby/ruby/archive/%RUBY_BRANCH%.zip
@@ -392,10 +396,10 @@ jobs:
 
           ### Compiled with:
 
-          * [Strawberry Perl](http://strawberryperl.com/) 5.28
-          * [LuaBinaries](http://luabinaries.sourceforge.net/download.html) 5.3
-          * [Python3](https://www.python.org/downloads/) 3.8
-          * [RubyInstaller2](https://rubyinstaller.org/downloads/) 2.6
+          * [LuaBinaries](http://luabinaries.sourceforge.net/download.html) ${{ env.LUA_VER_DOT }}
+          * [Strawberry Perl](http://strawberryperl.com/) ${{ env.PERL_VER_DOT }}
+          * [Python3](https://www.python.org/downloads/) ${{ env.PYTHON3_VER_DOT }}
+          * [RubyInstaller2](https://rubyinstaller.org/downloads/) ${{ env.RUBY_VER_DOT }}
         draft: false
         prerelease: false
 

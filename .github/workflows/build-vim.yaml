@@ -127,7 +127,7 @@ jobs:
         echo $latest > ../package/artifacts/latest.txt
         vimver=$(cat ../vimver.txt)
         cp ../package/artifacts/latest.txt ../vimver.txt
-        hg log -v -r "$latest:$vimver - $vimver" | sed -n -e 's/[][_*^<`\\]/\\&/g' -e 's/%/%25/g' -e 's/^patch /* /p' | sed -e ':a;N;$!ba;s/\n/%0A/g' > ../package/artifacts/changelog.txt
+        hg log -r "$latest:$vimver - $vimver" | sed -n -e 's/^summary:     //p' | sed -e '/^Added tag/d' -e 's/[][_*^<`\\]/\\&/g' -e 's/%/%25/g' -e 's/^patch //' -e 's/^/* /' | sed -e ':a;N;$!ba;s/\n/%0A/g' > ../package/artifacts/changelog.txt
         cat ../package/artifacts/changelog.txt
 
     - name: Check changes

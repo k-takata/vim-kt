@@ -141,6 +141,7 @@ jobs:
           echo No updates.
           echo ::set-output name=skip::yes
         )
+        exit 0
 
     - name: Create a list of download URLs
       if: steps.check.outputs.skip == 'no'

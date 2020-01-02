@@ -53,6 +53,12 @@ env:
   # winpty
   WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
 
+  # Escape sequences
+  COL_RED: "\x1b[31m"
+  COL_GREEN: "\x1b[32m"
+  COL_YELLOW: "\x1b[33m"
+  COL_RESET: "\x1b[m"
+
 jobs:
   build:
     runs-on: windows-latest
@@ -141,7 +147,7 @@ jobs:
         if ERRORLEVEL 1 (
           echo ::set-output name=skip::no
         ) else (
-          echo No updates.
+          echo %COL_YELLOW%No updates.%COL_RESET%
           echo ::set-output name=skip::yes
         )
         exit 0
@@ -170,31 +176,31 @@ jobs:
       run: |
         path C:\Program Files\7-Zip;%path%
 
-        echo Download Lua
+        echo %COL_GREEN%Download Lua%COL_RESET%
         call :downloadfile %LUA${{ matrix.bits }}_URL% downloads\lua.zip
         7z x downloads\lua.zip -o%LUA_DIR% > nul || exit 1
 
-        echo Download Perl
+        echo %COL_GREEN%Download Perl%COL_RESET%
         call :downloadfile %PERL${{ matrix.bits }}_URL% downloads\perl.zip
         :: Extract only the "perl" folder.
         7z x downloads\perl.zip perl -o%PERL_DIR%\.. > nul || exit 1
 
-        echo Download Ruby
+        echo %COL_GREEN%Download Ruby%COL_RESET%
         call :downloadfile %RUBY${{ matrix.bits }}_URL% downloads\ruby.zip
         7z x downloads\ruby.zip -oD:\ > nul || exit 1
         move %RUBY${{ matrix.bits }}_DIR% %RUBY_DIR%
 
-        echo Download Ruby source
+        echo %COL_GREEN%Download Ruby source%COL_RESET%
         call :downloadfile %RUBY_SRC_URL% downloads\ruby_src.zip
         :: Extract the files only we needed to reduce the building time.
         7z x downloads\ruby_src.zip */bin */enc/Makefile.in */win32 */common.mk -ir!version.h -xr!README.* -xr!*/win32/*.c -xr!*/win32/*.h -o.. > nul || exit 1
         move ..\ruby-%RUBY_BRANCH% ..\ruby > nul || exit 1
 
-        echo Download gettext
+        echo %COL_GREEN%Download gettext%COL_RESET%
         call :downloadfile %GETTEXT${{ matrix.bits }}_URL% downloads\gettext.zip
         7z e -y downloads\gettext.zip -o%GETTEXT_DIR% > nul || exit 1
 
-        echo Download winpty
+        echo %COL_GREEN%Download winpty%COL_RESET%
         call :downloadfile %WINPTY_URL% downloads\winpty.zip
         7z x -y downloads\winpty.zip -oD:\winpty > nul || exit 1
         copy /Y D:\winpty\${{ matrix.warch }}\bin\winpty.dll        vim\src\winpty${{ matrix.bits }}.dll
@@ -250,7 +256,7 @@ jobs:
           DYNAMIC_RUBY=yes RUBY=%RUBY_DIR% RUBY_MSVCRT_NAME=msvcrt ^
           || exit 1
         if not exist vim${{ matrix.bits }}.dll (
-          echo Build failure.
+          echo %COL_RED%Build failure.%COL_RESET%
           exit 1
         )
         cd po
@@ -265,20 +271,20 @@ jobs:
         call "%VCVARSALL%" ${{ matrix.vcarch }}
         cd vim\src
         echo.
-        echo gvim version:
+        echo %COL_GREEN%gvim version:%COL_RESET%
         start /wait .\gvim -u NONE -c "redir @a | ver | put a | 1,3d | wq!" ver.txt
         type ver.txt || exit 1
         start /wait .\gvim -u NONE -S ..\..\scripts\if_ver.vim -c quit
         type if_ver.txt
-        echo vim version:
+        echo %COL_GREEN%vim version:%COL_RESET%
         .\vim --version || exit 1
         .\vim --not-a-term -u NONE -S ..\..\scripts\if_ver.vim -c quit
         type if_ver.txt
         cd testdir
-        echo Test gvim:
+        echo %COL_GREEN%Test gvim:%COL_RESET%
         nmake -nologo -f Make_dos.mak VIMPROG=..\gvim || exit 1
         nmake -nologo -f Make_dos.mak clean
-        echo Test vim:
+        echo %COL_GREEN%Test vim:%COL_RESET%
         start /wait nmake -nologo -f Make_dos.mak VIMPROG=..\vim
         nmake -nologo -f Make_dos.mak report || exit 1
 
@@ -380,7 +386,7 @@ jobs:
           git push
           echo ::set-output name=skip::no
         ) else (
-          echo No updates.
+          echo %COL_YELLOW%No updates.%COL_RESET%
           echo ::set-output name=skip::yes
         )
 

@@ -152,23 +152,23 @@ jobs:
         )
         exit 0
 
-    - name: Create a list of download URLs
-      if: steps.check.outputs.skip == 'no'
-      shell: cmd
-      run: |
-        type NUL > urls.txt
-        echo %LUA${{ matrix.bits }}_URL%>> urls.txt
-        echo %PERL${{ matrix.bits }}_URL%>> urls.txt
-        echo %RUBY${{ matrix.bits }}_URL%>> urls.txt
-        echo %GETTEXT${{ matrix.bits }}_URL%>> urls.txt
-        echo %WINPTY_URL%>> urls.txt
-
-    - name: Cache downloaded files
-      if: steps.check.outputs.skip == 'no'
-      uses: actions/cache@v1
-      with:
-        path: downloads
-        key: ${{ runner.os }}-${{ matrix.bits }}-${{ hashFiles('urls.txt') }}
+#    - name: Create a list of download URLs
+#      if: steps.check.outputs.skip == 'no'
+#      shell: cmd
+#      run: |
+#        type NUL > urls.txt
+#        echo %LUA${{ matrix.bits }}_URL%>> urls.txt
+#        echo %PERL${{ matrix.bits }}_URL%>> urls.txt
+#        echo %RUBY${{ matrix.bits }}_URL%>> urls.txt
+#        echo %GETTEXT${{ matrix.bits }}_URL%>> urls.txt
+#        echo %WINPTY_URL%>> urls.txt
+#
+#    - name: Cache downloaded files
+#      if: steps.check.outputs.skip == 'no'
+#      uses: actions/cache@v1
+#      with:
+#        path: downloads
+#        key: ${{ runner.os }}-${{ matrix.bits }}-${{ hashFiles('urls.txt') }}
 
     - name: Download dependencies
       if: steps.check.outputs.skip == 'no'

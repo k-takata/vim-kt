@@ -361,13 +361,13 @@ jobs:
 
     - name: Get changelog
       id: changelog
-      shell: cmd
+      shell: bash
       run: |
-        for /f "delims=" %%i in (vim-kt-win64\changelog.txt) do set CHANGELOG=%%i
-        echo ::set-output name=log::%CHANGELOG%
-        for /f "delims=" %%i in (vim-kt-win64\latest.txt) do set LATEST=%%i
-        echo ::set-output name=ref::%LATEST:~1%
-        echo %LATEST%> vimver.txt
+        changelog=$(cat vim-kt-win64/changelog.txt)
+        echo "::set-output name=log::$changelog"
+        latest=$(cat vim-kt-win64/latest.txt)
+        echo "::set-output name=ref::${latest:1}"
+        echo $latest > vimver.txt
 
     - name: Commit and push
       id: commit

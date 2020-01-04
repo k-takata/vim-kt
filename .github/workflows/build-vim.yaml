@@ -84,6 +84,7 @@ jobs:
         for /f %%i in ('"%GITBIN%\date.exe" +%%Y%%m%%d') do (
           echo ::set-output name=date::%%i
         )
+        git config --global core.autocrlf input
 
     - uses: actions/checkout@v2
     - name: Checkout submodules
@@ -334,6 +335,7 @@ jobs:
         for /f %%i in ('"%GITBIN%\date.exe" +%%Y%%m%%d') do (
           echo ::set-output name=date::%%i
         )
+        git config --global core.autocrlf input
 
     - uses: actions/checkout@v2
     - name: Checkout submodules

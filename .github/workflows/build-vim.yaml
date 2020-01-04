@@ -374,12 +374,9 @@ jobs:
     - name: Commit and push
       id: commit
       shell: cmd
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git diff --quiet HEAD
         if ERRORLEVEL 1 (
-          git remote set-url --push origin https://%GITHUB_ACTOR%:%GITHUB_TOKEN%@github.com/%GITHUB_REPOSITORY%.git
           git config --local user.name "vim-kt CI"
           git config --local user.email "k-takata@users.noreply.github.com"
           git commit -a -m "Update Vim to v${{ steps.changelog.outputs.ref }}"

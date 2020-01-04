@@ -97,7 +97,7 @@ jobs:
       run: |
         for /d %%i in (contrib\*) do (
           git -C %%i checkout master
-          git -C %%i pull --ff-only
+          rem git -C %%i pull --ff-only
         )
 
 #    # See: https://github.com/nelsonjchen/reverse-rdp-windows-github-actions
@@ -348,7 +348,7 @@ jobs:
       run: |
         for /d %%i in (contrib\*) do (
           git -C %%i checkout master
-          git -C %%i pull --ff-only
+          rem git -C %%i pull --ff-only
         )
 
     - name: Download Artifact (win32)

@@ -90,7 +90,7 @@ jobs:
       run: |
         # Checkout the lastest version, ignore error
         git submodule update --init --depth 1 || true
-        for i in contrib/*; do
+        for i in contrib/*/; do
           git -C $i checkout master
         done
 
@@ -333,7 +333,7 @@ jobs:
       run: |
         # Checkout the lastest version, ignore error
         git submodule update --init --depth 1 || true
-        for i in contrib/*; do
+        for i in contrib/*/; do
           git -C $i checkout master
         done
 

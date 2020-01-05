@@ -79,11 +79,9 @@ jobs:
     steps:
     - name: Initalize
       id: init
-      shell: cmd
+      shell: bash
       run: |
-        for /f %%i in ('"%GITBIN%\date.exe" +%%Y%%m%%d') do (
-          echo ::set-output name=date::%%i
-        )
+        echo "::set-output name=date::$(date +%Y%m%d)"
         git config --global core.autocrlf input
 
     - uses: actions/checkout@v2
@@ -138,16 +136,14 @@ jobs:
 
     - name: Check changes
       id: check
-      shell: cmd
+      shell: bash
       run: |
-        git diff --quiet HEAD
-        if ERRORLEVEL 1 (
-          echo ::set-output name=skip::no
-        ) else (
-          echo %COL_YELLOW%No updates.%COL_RESET%
-          echo ::set-output name=skip::yes
-        )
-        exit 0
+        if git diff --quiet HEAD; then
+          echo ${COL_YELLOW}No updates.${COL_RESET}
+          echo "::set-output name=skip::yes"
+        else
+          echo "::set-output name=skip::no"
+        fi
 
 #    - name: Create a list of download URLs
 #      if: steps.check.outputs.skip == 'no'
@@ -326,11 +322,9 @@ jobs:
     steps:
     - name: Initalize
       id: init
-      shell: cmd
+      shell: bash
       run: |
-        for /f %%i in ('"%GITBIN%\date.exe" +%%Y%%m%%d') do (
-          echo ::set-output name=date::%%i
-        )
+        echo "::set-output name=date::$(date +%Y%m%d)"
         git config --global core.autocrlf input
 
     - uses: actions/checkout@v2
@@ -365,21 +359,20 @@ jobs:
 
     - name: Commit and push
       id: commit
-      shell: cmd
+      shell: bash
       run: |
-        git diff --quiet HEAD
-        if ERRORLEVEL 1 (
+        if git diff --quiet HEAD; then
+          echo ${COL_YELLOW}No updates.${COL_RESET}
+          echo "::set-output name=skip::yes"
+        else
           git config --local user.name "vim-kt CI"
           git config --local user.email "k-takata@users.noreply.github.com"
           git commit -a -m "Update Vim to v${{ steps.changelog.outputs.ref }}"
-          git tag "v${{ steps.changelog.outputs.ref }}" || exit 1
+          git tag "v${{ steps.changelog.outputs.ref }}"
           git push --tags
           git push
-          echo ::set-output name=skip::no
-        ) else (
-          echo %COL_YELLOW%No updates.%COL_RESET%
-          echo ::set-output name=skip::yes
-        )
+          echo "::set-output name=skip::no"
+        fi
 
     - name: Create Release
       id: create_release

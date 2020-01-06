@@ -239,15 +239,20 @@ jobs:
         iconv -f utf-8 -t cp932 ja.po | sjiscorr | dos2unix > ja.sjis.po
         iconv -f utf-8 -t euc-jp ja.po | sed -e "s/charset=[uU][tT][fF]-8/charset=euc-jp/" -e "s/# Original translations/# Generated from ja.po, DO NOT EDIT/" > ja.euc-jp.po
 
+    - name: Update patchlevel
+      if: steps.check.outputs.skip == 'no'
+      shell: bash
+      run: |
+        cd vim/src
+        patchlevel=$(sed -n -e '/included_patches/{n;n;n;s/ *\([0-9]*\).*/\1/p;q}' version.c)
+        sed -i -e "/VIM_VERSION_PATCHLEVEL/s/0/$patchlevel/" version.h
+
     - name: Build
       if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
         call "%VCVARSALL%" ${{ matrix.vcarch }}
         cd vim\src
-        rem Replace VIM_VERSION_PATCHLEVEL in version.h with the actual patchlevel
-        set CHERE_INVOKING=1
-        "%GITBIN%\bash" -lc "sed -i -e /VIM_VERSION_PATCHLEVEL/s/0/$(sed -n -e '/included_patches/{n;n;n;s/ *\([0-9]*\).*/\1/p;q}' version.c)/ version.h"
         rem Suppress progress animation
         sed -e "s/@<<$/@<< | sed -e 's#.*\\\\r.*##'/" Make_mvc.mak > Make_mvc2.mak
         rem Build gvim/vim with VIMDLL

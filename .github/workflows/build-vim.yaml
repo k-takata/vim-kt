@@ -301,7 +301,9 @@ jobs:
         md %DEST%\runtime\pack\dist-kt\start
         :: Don't copy hidden files
         xcopy contrib\autofmt   %DEST%\runtime\pack\dist-kt\start\autofmt   /Y /E /V /I /R /Q
+        del %DEST%\runtime\pack\dist-kt\start\autofmt\.gitignore
         xcopy contrib\vimdoc-ja %DEST%\runtime\pack\dist-kt\start\vimdoc-ja /Y /E /V /I /R /Q
+        del %DEST%\runtime\pack\dist-kt\start\vimdoc-ja\.gitignore
         cd package
         rem md artifacts
         set BASENAME=vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}

@@ -125,13 +125,15 @@ jobs:
       id: changelog
       shell: bash
       run: |
+        mkdir package/artifacts
         if [ ! -d vim ]; then
+          cp vimver.txt package/artifacts/latest.txt
+          touch package/artifacts/changelog.txt
           exit 0
         fi
         cd vim
         latest=$(git describe --tags --abbrev=0)
         echo "::set-output name=ref::${latest:1}"
-        mkdir ../package/artifacts
         echo $latest > ../package/artifacts/latest.txt
         vimver=$(cat ../vimver.txt)
         cp ../package/artifacts/latest.txt ../vimver.txt

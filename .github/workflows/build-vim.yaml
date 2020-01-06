@@ -9,9 +9,8 @@ on:
     - cron: '0 0 * * *'
 
 env:
-  VIMREPO: https://hg.osdn.net/view/vim/vim
+  VIMREPO: https://github.com/vim/vim
   MQREPO: http://hg.pf.osdn.net/view/k/k_/k_takata/vim-ktakata-mq
-  HG: hg --config extensions.mq= --config "ui.username=%USERNAME% <%USERNAME%@%USERDOMAIN%>"
   VCVARSALL: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat
   GITBIN: C:\Program Files\Git\usr\bin
 
@@ -109,30 +108,41 @@ jobs:
 #        Start-Process .\ngrok\ngrok.exe -ArgumentList "tcp 3389"
 
     - name: Checkout Vim
-      shell: cmd
+      shell: bash
       run: |
-        call %HG% qclone %VIMREPO% -p %MQREPO% vim
+        if ! git clone ${VIMREPO}.git --shallow-exclude="$(cat vimver.txt)"; then
+          exit 0
+        fi
         cd vim
-        hg log -v -r -1:-4 --color=always
-        call %HG% qpush -a
-        cd ..
+        patches=.hg/patches
+        hg clone $MQREPO $patches
+        # Apply patches
+        sed -e '/ #+/d' -e 's/ #-.*$//' $patches/series | \
+          xargs -I{} patch -p1 -i $patches/{}
+        git log -4 --color=always
 
     - name: Get changelog
       id: changelog
       shell: bash
       run: |
+        if [ ! -d vim ]; then
+          exit 0
+        fi
         cd vim
-        latest=$(hg log -r "last(tag('re:^v\d'))" -T "{tags}\n")
-        echo "::set-output name=ref::${latest#v}"
+        latest=$(git describe --tags --abbrev=0)
+        echo "::set-output name=ref::${latest:1}"
         mkdir ../package/artifacts
         echo $latest > ../package/artifacts/latest.txt
         vimver=$(cat ../vimver.txt)
         cp ../package/artifacts/latest.txt ../vimver.txt
-        hg log -r "$latest:$vimver - $vimver" -T "- {desc}\n" | \
-          sed -n -f ../scripts/changelog.sed | \
-          sed -e ':a;N;$!ba;s/\n/%0A/g' \
-          > ../package/artifacts/changelog.txt
-        cat ../package/artifacts/changelog.txt
+        commiturl=${VIMREPO}/commit/
+        git log --format='format:%H %s' | \
+          sed -e 's/[][_*^<`\\]/\\&/g' \
+              -e 's/%/%25/g' \
+              -e "s#^\([0-9a-f]*\) patch \([0-9.a-z]*\): #* [\2]($commiturl\1): #" \
+              -e "s#^\([0-9a-f]*\) \(.*\)#* [\2]($commiturl\1)#" | \
+          sed -e ':a;N;$!ba;s/\n/%0A/g' | \
+          tee ../package/artifacts/changelog.txt
 
     - name: Check changes
       id: check

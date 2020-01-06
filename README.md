@@ -45,3 +45,10 @@ The following plugins are included and enabled:
 The latest Japanese messages are also included:
 
 * [vim-jp/lang-ja](https://github.com/vim-jp/lang-ja)
+
+## Other dependencies
+
+The following packages are also included:
+
+* [gettext-iconv-windows](https://github.com/mlocati/gettext-iconv-windows)
+* [winpty](https://github.com/rprichard/winpty)

@@ -307,31 +307,31 @@ jobs:
       if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
       shell: cmd
       run: |
-        set DEST=package\vim-kt-win${{ matrix.bits }}
+        cd package
+        set DEST=vim-kt-win${{ matrix.bits }}
         md %DEST%
-        copy vim\src\*.pdb     package
-        copy vim\src\*vim*.exe %DEST%
-        copy vim\src\vim*.dll  %DEST%
-        copy vim\src\tee\*.exe %DEST%
-        copy vim\src\xxd\*.exe %DEST%
-        copy vim\src\winpty*   %DEST%
-        copy README.md         %DEST%
-        copy %LUA_DIR%\lua*.dll %DEST%
+        copy ..\vim\src\*.pdb     .
+        copy ..\vim\src\*vim*.exe %DEST%
+        copy ..\vim\src\vim*.dll  %DEST%
+        copy ..\vim\src\tee\*.exe %DEST%
+        copy ..\vim\src\xxd\*.exe %DEST%
+        copy ..\vim\src\winpty*   %DEST%
+        copy ..\README.md         %DEST%
+        copy %LUA_DIR%\lua*.dll   %DEST%
         copy %GETTEXT_DIR%\libiconv-2.dll %DEST%
         copy %GETTEXT_DIR%\libintl-8.dll  %DEST%
         if exist %GETTEXT_DIR%\libgcc_s_sjlj-1.dll copy %GETTEXT_DIR%\libgcc_s_sjlj-1.dll %DEST%
-        xcopy vim\runtime %DEST%\runtime /Y /E /V /I /H /R /Q
+        xcopy ..\vim\runtime %DEST%\runtime /Y /E /V /I /H /R /Q
         md %DEST%\runtime\pack\dist-kt\start
         :: Don't copy hidden files
-        xcopy contrib\autofmt   %DEST%\runtime\pack\dist-kt\start\autofmt   /Y /E /V /I /R /Q
+        xcopy ..\contrib\autofmt   %DEST%\runtime\pack\dist-kt\start\autofmt   /Y /E /V /I /R /Q
         del %DEST%\runtime\pack\dist-kt\start\autofmt\.gitignore
-        xcopy contrib\vimdoc-ja %DEST%\runtime\pack\dist-kt\start\vimdoc-ja /Y /E /V /I /R /Q
+        xcopy ..\contrib\vimdoc-ja %DEST%\runtime\pack\dist-kt\start\vimdoc-ja /Y /E /V /I /R /Q
         del %DEST%\runtime\pack\dist-kt\start\vimdoc-ja\.gitignore
-        cd package
         rem md artifacts
         set BASENAME=vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}
-        7z a artifacts\%BASENAME%.zip vim-kt-win${{ matrix.bits }}
-        7z a artifacts\%BASENAME%.7z  vim-kt-win${{ matrix.bits }}
+        7z a artifacts\%BASENAME%.zip %DEST%
+        7z a artifacts\%BASENAME%.7z  %DEST%
         7z a artifacts\%BASENAME%-pdb.7z *.pdb
 
     - name: Upload Artifact

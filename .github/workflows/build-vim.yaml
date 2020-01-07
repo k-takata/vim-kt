@@ -34,11 +34,11 @@ env:
   PYTHON3_VER_DOT: 3.8
   PYTHON3_DIR_BASE: C:\hostedtoolcache\windows\Python\3.8.0
   # Ruby
-  RUBY_VER: 26
-  RUBY_VER_DOT: 2.6
-  RUBY_API_VER_LONG: 2.6.0
-  RUBY_BRANCH: ruby_2_6
-  RUBY_RELEASE: 2.6.5-1
+  RUBY_VER: 27
+  RUBY_VER_DOT: 2.7
+  RUBY_API_VER_LONG: 2.7.0
+  RUBY_BRANCH: ruby_2_7
+  RUBY_RELEASE: 2.7.0-1
   RUBY_SRC_URL: https://github.com/ruby/ruby/archive/%RUBY_BRANCH%.zip
   RUBY32_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-%RUBY_RELEASE%/rubyinstaller-%RUBY_RELEASE%-x86.7z
   RUBY64_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-%RUBY_RELEASE%/rubyinstaller-%RUBY_RELEASE%-x64.7z

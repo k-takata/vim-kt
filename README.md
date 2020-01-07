@@ -31,7 +31,7 @@ The following interfaces are enabled:
 * [LuaBinaries](http://luabinaries.sourceforge.net/download.html) 5.3 (included)
 * [Strawberry Perl](http://strawberryperl.com/) 5.30
 * [Python3](https://www.python.org/downloads/) 3.8
-* [RubyInstaller2](https://rubyinstaller.org/downloads/) 2.6
+* [RubyInstaller2](https://rubyinstaller.org/downloads/) 2.7
 
 Perl, Python3 and Ruby are not included in this package. If you want use them, install the official binaries from the above sites.
 

@@ -18,30 +18,30 @@ env:
   # Lua
   LUA_VER: 53
   LUA_VER_DOT: 5.3
-  LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-5.3.5_Win32_dllw6_lib.zip
-  LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-5.3.5_Win64_dllw6_lib.zip
+  LUA_RELEASE: 5.3.5
+  LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win32_dllw6_lib.zip
+  LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win64_dllw6_lib.zip
   LUA_DIR: D:\Lua
   # Perl
   PERL_VER: 530
   PERL_VER_DOT: 5.30
-  PERL32_URL: http://strawberryperl.com/download/5.30.1.1/strawberry-perl-5.30.1.1-32bit-portable.zip
-  PERL64_URL: http://strawberryperl.com/download/5.30.1.1/strawberry-perl-5.30.1.1-64bit-portable.zip
+  PERL_RELEASE: 5.30.1.1
+  PERL32_URL: http://strawberryperl.com/download/%PERL_RELEASE%/strawberry-perl-%PERL_RELEASE%-32bit-portable.zip
+  PERL64_URL: http://strawberryperl.com/download/%PERL_RELEASE%/strawberry-perl-%PERL_RELEASE%-64bit-portable.zip
   PERL_DIR: D:\Strawberry\perl
   # Python 3
   PYTHON3_VER: 38
   PYTHON3_VER_DOT: 3.8
-  PYTHON3_32_DIR: C:\hostedtoolcache\windows\Python\3.8.0\x86
-  PYTHON3_64_DIR: C:\hostedtoolcache\windows\Python\3.8.0\x64
+  PYTHON3_DIR_BASE: C:\hostedtoolcache\windows\Python\3.8.0
   # Ruby
   RUBY_VER: 26
   RUBY_VER_DOT: 2.6
   RUBY_API_VER_LONG: 2.6.0
   RUBY_BRANCH: ruby_2_6
+  RUBY_RELEASE: 2.6.5-1
   RUBY_SRC_URL: https://github.com/ruby/ruby/archive/%RUBY_BRANCH%.zip
-  RUBY32_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-2.6.5-1/rubyinstaller-2.6.5-1-x86.7z
-  RUBY64_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-2.6.5-1/rubyinstaller-2.6.5-1-x64.7z
-  RUBY32_DIR: D:\rubyinstaller-2.6.5-1-x86
-  RUBY64_DIR: D:\rubyinstaller-2.6.5-1-x64
+  RUBY32_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-%RUBY_RELEASE%/rubyinstaller-%RUBY_RELEASE%-x86.7z
+  RUBY64_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-%RUBY_RELEASE%/rubyinstaller-%RUBY_RELEASE%-x64.7z
   RUBY_DIR: D:\rubyinstaller
 
   # Other dependencies
@@ -82,6 +82,7 @@ jobs:
       run: |
         echo "::set-output name=date::$(date +%Y%m%d)"
         git config --global core.autocrlf input
+        echo "::set-env name=PYTHON3_DIR::$PYTHON3_DIR_BASE\\${{ matrix.arch }}"
 
     - uses: actions/checkout@v2
     - name: Checkout and update submodules
@@ -197,7 +198,7 @@ jobs:
         echo %COL_GREEN%Download Ruby%COL_RESET%
         call :downloadfile %RUBY${{ matrix.bits }}_URL% downloads\ruby.zip
         7z x downloads\ruby.zip -oD:\ > nul || exit 1
-        move %RUBY${{ matrix.bits }}_DIR% %RUBY_DIR%
+        move D:\rubyinstaller-%RUBY_RELEASE%-${{ matrix.arch }} %RUBY_DIR% > nul || exit 1
 
         echo %COL_GREEN%Download Ruby source%COL_RESET%
         call :downloadfile %RUBY_SRC_URL% downloads\ruby_src.zip
@@ -266,7 +267,7 @@ jobs:
           GUI=yes IME=yes ICONV=yes VIMDLL=yes ^
           DYNAMIC_LUA=yes LUA=%LUA_DIR% ^
           DYNAMIC_PERL=yes PERL=%PERL_DIR% ^
-          DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_${{ matrix.bits }}_DIR% ^
+          DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR% ^
           DYNAMIC_RUBY=yes RUBY=%RUBY_DIR% RUBY_MSVCRT_NAME=msvcrt ^
           || exit 1
         if not exist vim${{ matrix.bits }}.dll (
@@ -281,7 +282,7 @@ jobs:
       if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
       shell: cmd
       run: |
-        path %LUA_DIR%;%PERL_DIR%\bin;%PYTHON3_${{ matrix.bits }}_DIR%;%RUBY_DIR%\bin;%RUBY_DIR%\bin\ruby_builtin_dlls;%GETTEXT_DIR%;%path%
+        path %LUA_DIR%;%PERL_DIR%\bin;%PYTHON3_DIR%;%RUBY_DIR%\bin;%RUBY_DIR%\bin\ruby_builtin_dlls;%GETTEXT_DIR%;%path%
         call "%VCVARSALL%" ${{ matrix.vcarch }}
         cd vim\src
         echo.
@@ -306,30 +307,31 @@ jobs:
       if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
       shell: cmd
       run: |
-        set DEST=package\vim-kt-win${{ matrix.bits }}
+        cd package
+        set DEST=vim-kt-win${{ matrix.bits }}
         md %DEST%
-        copy vim\src\*.pdb     package
-        copy vim\src\*vim*.exe %DEST%
-        copy vim\src\vim*.dll  %DEST%
-        copy vim\src\tee\*.exe %DEST%
-        copy vim\src\xxd\*.exe %DEST%
-        copy vim\src\winpty*   %DEST%
-        copy %LUA_DIR%\lua*.dll %DEST%
+        copy ..\vim\src\*.pdb     .
+        copy ..\vim\src\*vim*.exe %DEST%
+        copy ..\vim\src\vim*.dll  %DEST%
+        copy ..\vim\src\tee\*.exe %DEST%
+        copy ..\vim\src\xxd\*.exe %DEST%
+        copy ..\vim\src\winpty*   %DEST%
+        copy ..\README.md         %DEST%
+        copy %LUA_DIR%\lua*.dll   %DEST%
         copy %GETTEXT_DIR%\libiconv-2.dll %DEST%
         copy %GETTEXT_DIR%\libintl-8.dll  %DEST%
         if exist %GETTEXT_DIR%\libgcc_s_sjlj-1.dll copy %GETTEXT_DIR%\libgcc_s_sjlj-1.dll %DEST%
-        xcopy vim\runtime %DEST%\runtime /Y /E /V /I /H /R /Q
+        xcopy ..\vim\runtime %DEST%\runtime /Y /E /V /I /H /R /Q
         md %DEST%\runtime\pack\dist-kt\start
         :: Don't copy hidden files
-        xcopy contrib\autofmt   %DEST%\runtime\pack\dist-kt\start\autofmt   /Y /E /V /I /R /Q
+        xcopy ..\contrib\autofmt   %DEST%\runtime\pack\dist-kt\start\autofmt   /Y /E /V /I /R /Q
         del %DEST%\runtime\pack\dist-kt\start\autofmt\.gitignore
-        xcopy contrib\vimdoc-ja %DEST%\runtime\pack\dist-kt\start\vimdoc-ja /Y /E /V /I /R /Q
+        xcopy ..\contrib\vimdoc-ja %DEST%\runtime\pack\dist-kt\start\vimdoc-ja /Y /E /V /I /R /Q
         del %DEST%\runtime\pack\dist-kt\start\vimdoc-ja\.gitignore
-        cd package
         rem md artifacts
         set BASENAME=vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}
-        7z a artifacts\%BASENAME%.zip vim-kt-win${{ matrix.bits }}
-        7z a artifacts\%BASENAME%.7z  vim-kt-win${{ matrix.bits }}
+        7z a artifacts\%BASENAME%.zip %DEST%
+        7z a artifacts\%BASENAME%.7z  %DEST%
         7z a artifacts\%BASENAME%-pdb.7z *.pdb
 
     - name: Upload Artifact

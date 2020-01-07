@@ -33,15 +33,15 @@ env:
   PYTHON3_32_DIR: C:\hostedtoolcache\windows\Python\3.8.0\x86
   PYTHON3_64_DIR: C:\hostedtoolcache\windows\Python\3.8.0\x64
   # Ruby
-  RUBY_VER: 27
-  RUBY_VER_DOT: 2.7
-  RUBY_API_VER_LONG: 2.7.0
-  RUBY_BRANCH: ruby_2_7
+  RUBY_VER: 26
+  RUBY_VER_DOT: 2.6
+  RUBY_API_VER_LONG: 2.6.0
+  RUBY_BRANCH: ruby_2_6
   RUBY_SRC_URL: https://github.com/ruby/ruby/archive/%RUBY_BRANCH%.zip
-  RUBY32_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-2.7.0-1/rubyinstaller-2.7.0-1-x86.7z
-  RUBY64_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-2.7.0-1/rubyinstaller-2.7.0-1-x64.7z
-  RUBY32_DIR: D:\rubyinstaller-2.7.0-1-x86
-  RUBY64_DIR: D:\rubyinstaller-2.7.0-1-x64
+  RUBY32_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-2.6.5-1/rubyinstaller-2.6.5-1-x86.7z
+  RUBY64_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-2.6.5-1/rubyinstaller-2.6.5-1-x64.7z
+  RUBY32_DIR: D:\rubyinstaller-2.6.5-1-x86
+  RUBY64_DIR: D:\rubyinstaller-2.6.5-1-x64
   RUBY_DIR: D:\rubyinstaller
 
   # Other dependencies

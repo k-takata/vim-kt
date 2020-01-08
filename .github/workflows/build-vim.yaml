@@ -150,6 +150,9 @@ jobs:
               -e "s#^\([0-9a-f]*\) \(.*\)#* [\2]($commiturl\1)#" | \
           sed -e ':a;N;$!ba;s/\n/%0A/g' | \
           tee ../package/artifacts/changelog.txt
+        git log --format='format:* %s' | \
+          sed -e 's/^\* patch /* /g' | \
+          tee ../package/artifacts/changelog-plain.txt
 
     - name: Check changes
       id: check
@@ -393,7 +396,9 @@ jobs:
         else
           git config --local user.name "vim-kt CI"
           git config --local user.email "k-takata@users.noreply.github.com"
-          git commit -a -m "Update Vim to v${{ steps.changelog.outputs.ref }}"
+          git commit -a \
+            -m "Update Vim to v${{ steps.changelog.outputs.ref }}" \
+            -m "$(cat vim-kt-win64/changelog-plain.txt)"
           git tag "v${{ steps.changelog.outputs.ref }}"
           git push --tags
           git push

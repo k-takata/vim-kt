@@ -406,14 +406,14 @@ jobs:
         fi
 
     - name: Create Release
-      id: create_release
-      uses: actions/create-release@master
+      #uses: softprops/action-gh-release@v1
+      uses: k-takata/action-gh-release@add-tag-name
       if: steps.commit.outputs.skip == 'no'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: v${{ steps.changelog.outputs.ref }}
-        release_name:  v${{ steps.changelog.outputs.ref }}
+        name:  v${{ steps.changelog.outputs.ref }}
         body: |
           ### Changes:
 
@@ -427,71 +427,12 @@ jobs:
           * [RubyInstaller2](https://rubyinstaller.org/downloads/) ${{ env.RUBY_VER_DOT }}
         draft: false
         prerelease: false
-
-    - name: Upload Release Asset (win32)
-      uses: actions/upload-release-asset@v1.0.1
-      if: steps.commit.outputs.skip == 'no'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./vim-kt-win32/vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win32.zip
-        asset_name: vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win32.zip
-        asset_content_type: application/zip
-
-    - name: Upload Release Asset (win32-7z)
-      uses: actions/upload-release-asset@v1.0.1
-      if: steps.commit.outputs.skip == 'no'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./vim-kt-win32/vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win32.7z
-        asset_name: vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win32.7z
-        asset_content_type: application/x-7z-compressed
-
-    - name: Upload Release Asset (win32-pdb)
-      uses: actions/upload-release-asset@v1.0.1
-      if: steps.commit.outputs.skip == 'no'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./vim-kt-win32/vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win32-pdb.7z
-        asset_name: vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win32-pdb.7z
-        asset_content_type: application/x-7z-compressed
-
-    - name: Upload Release Asset (win64)
-      uses: actions/upload-release-asset@v1.0.1
-      if: steps.commit.outputs.skip == 'no'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./vim-kt-win64/vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win64.zip
-        asset_name: vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win64.zip
-        asset_content_type: application/zip
-
-    - name: Upload Release Asset (win64-7z)
-      uses: actions/upload-release-asset@v1.0.1
-      if: steps.commit.outputs.skip == 'no'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./vim-kt-win64/vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win64.7z
-        asset_name: vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win64.7z
-        asset_content_type: application/x-7z-compressed
-
-    - name: Upload Release Asset (win64-pdb)
-      uses: actions/upload-release-asset@v1.0.1
-      if: steps.commit.outputs.skip == 'no'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./vim-kt-win64/vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win64-pdb.7z
-        asset_name: vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win64-pdb.7z
-        asset_content_type: application/x-7z-compressed
+        files: |
+          ./vim-kt-win32/vim-kt-*-*-win32.zip
+          ./vim-kt-win32/vim-kt-*-*-win32.7z
+          ./vim-kt-win32/vim-kt-*-*-win32-pdb.7z
+          ./vim-kt-win64/vim-kt-*-*-win64.zip
+          ./vim-kt-win64/vim-kt-*-*-win64.7z
+          ./vim-kt-win64/vim-kt-*-*-win64-pdb.7z
 
 # vim: ts=2 sw=2 sts=2 et

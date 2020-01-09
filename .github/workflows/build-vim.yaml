@@ -403,8 +403,7 @@ jobs:
         fi
 
     - name: Create Release
-      #uses: softprops/action-gh-release@v1
-      uses: k-takata/action-gh-release@add-tag-name
+      uses: softprops/action-gh-release@9f4852e
       if: steps.commit.outputs.skip == 'no'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

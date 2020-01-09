@@ -319,6 +319,7 @@ jobs:
         copy ..\vim\src\tee\*.exe %DEST%
         copy ..\vim\src\xxd\*.exe %DEST%
         copy ..\vim\src\winpty*   %DEST%
+        copy ..\vim\LICENSE       %DEST%
         copy ..\README.md         %DEST%
         copy %LUA_DIR%\lua*.dll   %DEST%
         copy %GETTEXT_DIR%\libiconv-2.dll %DEST%

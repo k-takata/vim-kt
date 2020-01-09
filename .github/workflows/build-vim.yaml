@@ -133,7 +133,7 @@ jobs:
         mkdir package/artifacts
         if [ ! -d vim ]; then
           cp vimver.txt package/artifacts/latest.txt
-          touch package/artifacts/changelog.txt
+          touch package/artifacts/changelog.md
           exit 0
         fi
         cd vim
@@ -146,13 +146,13 @@ jobs:
         git log --format='format:%H %s' | \
           sed -e 's/[][_*^<`\\]/\\&/g' \
               -e 's/%/%25/g' \
-              -e "s#^\([0-9a-f]*\) patch \([0-9.a-z]*\): #* [\2]($commiturl\1): #" \
+              -e "s#^\([0-9a-f]*\) patch \([0-9.a-z]*\)#* [\2]($commiturl\1)#" \
               -e "s#^\([0-9a-f]*\) \(.*\)#* [\2]($commiturl\1)#" | \
           sed -e ':a;N;$!ba;s/\n/%0A/g' | \
-          tee ../package/artifacts/changelog.txt
+          tee ../package/artifacts/changelog.md
         git log --format='format:* %s' | \
           sed -e 's/^\* patch /* /g' | \
-          tee ../package/artifacts/changelog-plain.txt
+          tee ../package/artifacts/changelog.txt
 
     - name: Check changes
       id: check
@@ -350,10 +350,8 @@ jobs:
 
     steps:
     - name: Initalize
-      id: init
       shell: bash
       run: |
-        echo "::set-output name=date::$(date +%Y%m%d)"
         git config --global core.autocrlf input
 
     - uses: actions/checkout@v2
@@ -380,7 +378,7 @@ jobs:
       id: changelog
       shell: bash
       run: |
-        changelog=$(cat vim-kt-win64/changelog.txt)
+        changelog=$(cat vim-kt-win64/changelog.md)
         echo "::set-output name=log::$changelog"
         latest=$(cat vim-kt-win64/latest.txt)
         echo "::set-output name=ref::${latest:1}"
@@ -398,10 +396,9 @@ jobs:
           git config --local user.email "k-takata@users.noreply.github.com"
           git commit -a \
             -m "Update Vim to v${{ steps.changelog.outputs.ref }}" \
-            -m "$(cat vim-kt-win64/changelog-plain.txt)"
+            -m "$(cat vim-kt-win64/changelog.txt)"
           git tag "v${{ steps.changelog.outputs.ref }}"
-          git push --tags
-          git push
+          git push origin HEAD --tags
           echo "::set-output name=skip::no"
         fi
 

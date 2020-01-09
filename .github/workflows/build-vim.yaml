@@ -333,9 +333,9 @@ jobs:
         del %DEST%\runtime\pack\dist-kt\start\vimdoc-ja\.gitignore
         rem md artifacts
         set BASENAME=vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}
-        7z a artifacts\%BASENAME%.zip %DEST%
-        7z a artifacts\%BASENAME%.7z  %DEST%
-        7z a artifacts\%BASENAME%-pdb.7z *.pdb
+        7z a -mx=9 artifacts\%BASENAME%.zip %DEST%
+        7z a -mx=9 artifacts\%BASENAME%.7z  %DEST%
+        7z a -mx=9 artifacts\%BASENAME%-pdb.7z *.pdb
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v1

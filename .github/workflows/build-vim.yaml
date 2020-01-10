@@ -249,7 +249,10 @@ jobs:
         cd vim\src\po
         cl sjiscorr.c
         iconv -f utf-8 -t cp932 ja.po | sjiscorr | dos2unix > ja.sjis.po
-        iconv -f utf-8 -t euc-jp ja.po | sed -e "s/charset=[uU][tT][fF]-8/charset=euc-jp/" -e "s/# Original translations/# Generated from ja.po, DO NOT EDIT/" > ja.euc-jp.po
+        iconv -f utf-8 -t euc-jp ja.po | \
+          sed -e "s/charset=[uU][tT][fF]-8/charset=euc-jp/" \
+              -e "s/# Original translations/# Generated from ja.po, DO NOT EDIT/" \
+              > ja.euc-jp.po
 
     - name: Update patchlevel
       if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'

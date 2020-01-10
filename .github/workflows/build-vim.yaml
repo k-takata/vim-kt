@@ -131,7 +131,7 @@ jobs:
       shell: bash
       run: |
         mkdir package/artifacts
-        if [ ! -d vim ]; then
+        if [ ! -d vim ] || [ "$(git -C vim tag)" = "" ]; then
           cp vimver.txt package/artifacts/latest.txt
           touch package/artifacts/changelog.md
           exit 0
@@ -140,17 +140,19 @@ jobs:
         latest=$(git describe --tags --abbrev=0)
         echo "::set-output name=ref::${latest:1}"
         echo $latest > ../package/artifacts/latest.txt
-        vimver=$(cat ../vimver.txt)
-        cp ../package/artifacts/latest.txt ../vimver.txt
+        echo $latest > ../vimver.txt
+        git rev-parse HEAD > ../package/artifacts/latestrev.txt
+        oldrev=$(cat ../vimrev.txt)
         commiturl=${VIMREPO}/commit/
-        git log --format='format:%H %s' | \
+        git log --format='format:%H %s' $oldrev..HEAD | \
           sed -e 's/[][_*^<`\\]/\\&/g' \
               -e 's/%/%25/g' \
               -e "s#^\([0-9a-f]*\) patch \([0-9.a-z]*\)#* [\2]($commiturl\1)#" \
               -e "s#^\([0-9a-f]*\) \(.*\)#* [\2]($commiturl\1)#" | \
           sed -e ':a;N;$!ba;s/\n/%0A/g' | \
           tee ../package/artifacts/changelog.md
-        git log --format='format:* %s' | \
+        echo
+        git log --format='format:* %s' $oldrev..HEAD | \
           sed -e 's/^\* patch /* /g' | \
           tee ../package/artifacts/changelog.txt
 
@@ -393,6 +395,7 @@ jobs:
           echo ${COL_YELLOW}No updates.${COL_RESET}
           echo "::set-output name=skip::yes"
         else
+          cp vim-kt-win64/latestrev.txt vimrev.txt
           git config --local user.name "vim-kt CI"
           git config --local user.email "k-takata@users.noreply.github.com"
           git commit -a \

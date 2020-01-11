@@ -172,9 +172,9 @@ jobs:
 #      shell: cmd
 #      run: |
 #        type NUL > urls.txt
-#        echo %LUA${{ matrix.bits }}_URL%>> urls.txt
-#        echo %PERL${{ matrix.bits }}_URL%>> urls.txt
-#        echo %RUBY${{ matrix.bits }}_URL%>> urls.txt
+#        echo %LUA_RELEASE%>> urls.txt
+#        echo %PERL_RELEASE%>> urls.txt
+#        echo %RUBY_RELEASE%>> urls.txt
 #        echo %GETTEXT${{ matrix.bits }}_URL%>> urls.txt
 #        echo %WINPTY_URL%>> urls.txt
 #

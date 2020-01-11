@@ -1,3 +1,5 @@
+![build status](https://github.com/k-takata/vim-kt/workflows/Build%20Vim/badge.svg)
+
 # vim-kt
 
 This provides my private Vim packages for Windows.

@@ -143,8 +143,13 @@ jobs:
         echo $latest > ../vimver.txt
         git rev-parse HEAD > ../package/artifacts/latestrev.txt
         oldrev=$(cat ../vimrev.txt)
+        if git log --format=format: $oldrev > /dev/null 2>&1; then
+          logopt=$oldrev..HEAD
+        else
+          logopt=--
+        fi
         commiturl=${VIMREPO}/commit/
-        git log --format='format:%H %s' $oldrev..HEAD | \
+        git log --format='format:%H %s' $logopt | \
           sed -e 's/[][_*^<`\\]/\\&/g' \
               -e 's/%/%25/g' \
               -e "s#^\([0-9a-f]*\) patch \([0-9.a-z]*\)#* [\2]($commiturl\1)#" \
@@ -152,7 +157,7 @@ jobs:
           sed -e ':a;N;$!ba;s/\n/%0A/g' | \
           tee ../package/artifacts/changelog.md
         echo
-        git log --format='format:* %s' $oldrev..HEAD | \
+        git log --format='format:* %s' $logopt | \
           sed -e 's/^\* patch /* /g' | \
           tee ../package/artifacts/changelog.txt
 

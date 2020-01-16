@@ -118,13 +118,20 @@ jobs:
             exit 0
           fi
         fi
+        git -C vim log -4 --color=always
+
+    - name: Checkout and apply patches
+      shell: bash
+      run: |
+        if [ ! -d vim ]; then
+          exit 0
+        fi
         cd vim
         patches=.hg/patches
         hg clone $MQREPO $patches
         # Apply patches
         sed -e '/ #+/d' -e 's/ #-.*$//' $patches/series | \
-          xargs -I{} patch -p1 -i $patches/{}
-        git log -4 --color=always
+          xargs -I{} --verbose patch -p1 -i $patches/{}
 
     - name: Get changelog
       id: changelog
@@ -143,7 +150,7 @@ jobs:
         echo $latest > ../vimver.txt
         git rev-parse HEAD > ../package/artifacts/latestrev.txt
         oldrev=$(cat ../vimrev.txt)
-        if git log --format=format: $oldrev > /dev/null 2>&1; then
+        if git log --format='format:' $oldrev > /dev/null 2>&1; then
           logopt=$oldrev..HEAD
         else
           logopt=--

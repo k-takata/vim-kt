@@ -32,7 +32,6 @@ env:
   # Python 3
   PYTHON3_VER: 38
   PYTHON3_VER_DOT: 3.8
-  PYTHON3_DIR_BASE: C:\hostedtoolcache\windows\Python\3.8.1
   # Ruby
   RUBY_VER: 27
   RUBY_VER_DOT: 2.7
@@ -70,10 +69,14 @@ jobs:
             vcarch: amd64
             warch: x64
             bits: 64
+            cygreg: registry
+            pyreg: ""
           - arch: x86
             vcarch: x86
             warch: ia32
             bits: 32
+            cygreg: registry32
+            pyreg: "-32"
 
     steps:
     - name: Initalize
@@ -82,7 +85,8 @@ jobs:
       run: |
         echo "::set-output name=date::$(date +%Y%m%d)"
         git config --global core.autocrlf input
-        echo "::set-env name=PYTHON3_DIR::$PYTHON3_DIR_BASE\\${{ matrix.arch }}"
+        python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
+        echo "::set-env name=PYTHON3_DIR::$python3_dir"
 
     - uses: actions/checkout@v2
     - name: Checkout and update submodules

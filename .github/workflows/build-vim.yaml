@@ -45,8 +45,8 @@ env:
 
   # Other dependencies
   # gettext
-  GETTEXT32_URL: https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.19.8.1-v1.15/gettext0.19.8.1-iconv1.15-shared-32.zip
-  GETTEXT64_URL: https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.19.8.1-v1.15/gettext0.19.8.1-iconv1.15-shared-64.zip
+  GETTEXT32_URL: https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.20.2-v1.16/gettext0.20.2-iconv1.16-shared-32.zip
+  GETTEXT64_URL: https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.20.2-v1.16/gettext0.20.2-iconv1.16-shared-64.zip
   GETTEXT_DIR: D:\gettext
   # winpty
   WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
@@ -345,7 +345,7 @@ jobs:
         copy %LUA_DIR%\lua*.dll   %DEST%
         copy %GETTEXT_DIR%\libiconv-2.dll %DEST%
         copy %GETTEXT_DIR%\libintl-8.dll  %DEST%
-        if exist %GETTEXT_DIR%\libgcc_s_sjlj-1.dll copy %GETTEXT_DIR%\libgcc_s_sjlj-1.dll %DEST%
+        rem if exist %GETTEXT_DIR%\libgcc_s_sjlj-1.dll copy %GETTEXT_DIR%\libgcc_s_sjlj-1.dll %DEST%
         xcopy ..\vim\runtime %DEST%\runtime /Y /E /V /I /H /R /Q
         md %DEST%\runtime\pack\dist-kt\start
         :: Don't copy hidden files

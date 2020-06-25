@@ -25,7 +25,7 @@ env:
   # Perl
   PERL_VER: 530
   PERL_VER_DOT: '5.30'
-  PERL_RELEASE: 5.30.1.1
+  PERL_RELEASE: 5.30.2.1
   PERL32_URL: http://strawberryperl.com/download/%PERL_RELEASE%/strawberry-perl-%PERL_RELEASE%-32bit-portable.zip
   PERL64_URL: http://strawberryperl.com/download/%PERL_RELEASE%/strawberry-perl-%PERL_RELEASE%-64bit-portable.zip
   PERL_DIR: D:\Strawberry\perl
@@ -37,7 +37,7 @@ env:
   RUBY_VER_DOT: '2.7'
   RUBY_API_VER_LONG: 2.7.0
   RUBY_BRANCH: ruby_2_7
-  RUBY_RELEASE: 2.7.0-1
+  RUBY_RELEASE: 2.7.1-1
   RUBY_SRC_URL: https://github.com/ruby/ruby/archive/%RUBY_BRANCH%.zip
   RUBY32_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-%RUBY_RELEASE%/rubyinstaller-%RUBY_RELEASE%-x86.7z
   RUBY64_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-%RUBY_RELEASE%/rubyinstaller-%RUBY_RELEASE%-x64.7z

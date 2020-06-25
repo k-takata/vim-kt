@@ -183,23 +183,23 @@ jobs:
           echo "::set-output name=skip::no"
         fi
 
-#    - name: Create a list of download URLs
-#      if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
-#      shell: cmd
-#      run: |
-#        type NUL > urls.txt
-#        echo %LUA_RELEASE%>> urls.txt
-#        echo %PERL_RELEASE%>> urls.txt
-#        echo %RUBY_RELEASE%>> urls.txt
-#        echo %GETTEXT${{ matrix.bits }}_URL%>> urls.txt
-#        echo %WINPTY_URL%>> urls.txt
-#
-#    - name: Cache downloaded files
-#      if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
-#      uses: actions/cache@v1
-#      with:
-#        path: downloads
-#        key: ${{ runner.os }}-${{ matrix.bits }}-${{ hashFiles('urls.txt') }}
+    - name: Create a list of download URLs
+      if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
+      shell: cmd
+      run: |
+        type NUL > urls.txt
+        echo %LUA_RELEASE%>> urls.txt
+        echo %PERL_RELEASE%>> urls.txt
+        echo %RUBY_RELEASE%>> urls.txt
+        echo %GETTEXT${{ matrix.bits }}_URL%>> urls.txt
+        echo %WINPTY_URL%>> urls.txt
+
+    - name: Cache downloaded files
+      if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
+      uses: actions/cache@v2
+      with:
+        path: downloads
+        key: ${{ runner.os }}-${{ matrix.bits }}-${{ hashFiles('urls.txt') }}
 
     - name: Download dependencies
       if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'

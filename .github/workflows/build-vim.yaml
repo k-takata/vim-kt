@@ -309,6 +309,7 @@ jobs:
     - name: Test
       if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
       shell: cmd
+      timeout-minutes: 20
       run: |
         path %LUA_DIR%;%PERL_DIR%\bin;%PYTHON3_DIR%;%RUBY_DIR%\bin;%RUBY_DIR%\bin\ruby_builtin_dlls;%GETTEXT_DIR%;%path%
         call "%VCVARSALL%" ${{ matrix.vcarch }}
@@ -330,7 +331,8 @@ jobs:
         echo %COL_GREEN%Test vim:%COL_RESET%
         if "${{ matrix.arch }}"=="x64" (
           rem This test may hang up unless it is executed in a separate console.
-          start /wait nmake -nologo -f Make_dos.mak VIMPROG=..\vim
+          start /wait cmd /c "nmake -nologo -f Make_dos.mak VIMPROG=..\vim > nul"
+          if exist messages type messages
           nmake -nologo -f Make_dos.mak report || exit 1
         ) else (
           nmake -nologo -f Make_dos.mak VIMPROG=..\vim || exit 1

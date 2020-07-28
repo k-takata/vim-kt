@@ -331,6 +331,7 @@ jobs:
         if "${{ matrix.arch }}"=="x64" (
           rem This test may hang up unless it is executed in a separate console.
           start /wait nmake -nologo -f Make_dos.mak VIMPROG=..\vim
+          if exist messages type messages
           nmake -nologo -f Make_dos.mak report || exit 1
         ) else (
           nmake -nologo -f Make_dos.mak VIMPROG=..\vim || exit 1

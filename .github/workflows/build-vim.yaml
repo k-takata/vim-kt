@@ -328,8 +328,13 @@ jobs:
         nmake -nologo -f Make_dos.mak VIMPROG=..\gvim || exit 1
         nmake -nologo -f Make_dos.mak clean
         echo %COL_GREEN%Test vim:%COL_RESET%
-        start /wait nmake -nologo -f Make_dos.mak VIMPROG=..\vim
-        nmake -nologo -f Make_dos.mak report || exit 1
+        if "${{ matrix.arch }}"=="x64" (
+          rem This test may hang up unless it is executed in a separate console.
+          start /wait nmake -nologo -f Make_dos.mak VIMPROG=..\vim
+          nmake -nologo -f Make_dos.mak report || exit 1
+        ) else (
+          nmake -nologo -f Make_dos.mak VIMPROG=..\vim || exit 1
+        )
 
     - name: Package
       if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'

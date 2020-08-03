@@ -30,7 +30,7 @@ The following source codes and patches are used to build this package:
 
 The following interfaces are enabled:
 
-* [LuaBinaries](http://luabinaries.sourceforge.net/download.html) 5.3 (included)
+* [LuaBinaries](http://luabinaries.sourceforge.net/download.html) 5.4 (included)
 * [Strawberry Perl](http://strawberryperl.com/) 5.30
 * [Python3](https://www.python.org/downloads/) 3.8
 * [RubyInstaller2](https://rubyinstaller.org/downloads/) 2.7

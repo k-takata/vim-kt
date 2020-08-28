@@ -283,6 +283,7 @@ jobs:
         sed -i -e "/VIM_VERSION_PATCHLEVEL/s/0/$patchlevel/" version.h
 
     - name: Copy src directory to src2
+      if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
       shell: cmd
       run: |
         cd vim

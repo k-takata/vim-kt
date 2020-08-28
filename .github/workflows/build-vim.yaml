@@ -282,6 +282,12 @@ jobs:
         patchlevel=$(sed -n -e '/included_patches/{n;n;n;s/ *\([0-9]*\).*/\1/p;q}' version.c)
         sed -i -e "/VIM_VERSION_PATCHLEVEL/s/0/$patchlevel/" version.h
 
+    - name: Copy src directory to src2
+      shell: cmd
+      run: |
+        cd vim
+        xcopy src src2\ /E > nul
+
     - name: Build
       if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
       shell: cmd
@@ -324,10 +330,6 @@ jobs:
         .\vim --version || exit 1
         .\vim --not-a-term -u NONE -S ..\..\scripts\if_ver.vim -c quit
         type if_ver.txt
-
-        mkdir ..\src2
-        xcopy testdir ..\src2\testdir\ /E > nul || exit 1
-        copy evalfunc.c ..\src2 > nul
 
         echo %COL_GREEN%Start testing vim in background.%COL_RESET%
         start cmd /c "cd ..\src2\testdir & nmake -nologo -f Make_dos.mak VIMPROG=..\..\src\vim > nul & echo done>done.txt"

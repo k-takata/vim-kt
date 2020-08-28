@@ -178,13 +178,18 @@ jobs:
       run: |
         if git diff --quiet HEAD vimver.txt; then
           echo ${COL_YELLOW}No updates.${COL_RESET}
-          echo "::set-output name=skip::yes"
+          if [ "${{ github.event_name }}" = 'pull_request' ]; then
+            # Don't skip on pull_request even if there are no updates.
+            echo "::set-output name=skip::no"
+          else
+            echo "::set-output name=skip::yes"
+          fi
         else
           echo "::set-output name=skip::no"
         fi
 
     - name: Create a list of download URLs
-      if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
+      if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
         type NUL > urls.txt
@@ -195,14 +200,14 @@ jobs:
         echo %WINPTY_URL%>> urls.txt
 
     - name: Cache downloaded files
-      if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
+      if: steps.check.outputs.skip == 'no'
       uses: actions/cache@v2
       with:
         path: downloads
         key: ${{ runner.os }}-${{ matrix.bits }}-${{ hashFiles('urls.txt') }}
 
     - name: Download dependencies
-      if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
+      if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
         path C:\Program Files\7-Zip;%path%
@@ -251,7 +256,7 @@ jobs:
         goto :eof
 
     - name: Create Ruby's config.h
-      if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
+      if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
         call "%VCVARSALL%" ${{ matrix.vcarch }}
@@ -261,7 +266,7 @@ jobs:
         xcopy /s .ext\include %RUBY_DIR%\include\ruby-%RUBY_API_VER_LONG%
 
     - name: Update ja.po
-      if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
+      if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
         call "%VCVARSALL%" ${{ matrix.vcarch }}
@@ -275,7 +280,7 @@ jobs:
           > ja.euc-jp.po
 
     - name: Update patchlevel
-      if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
+      if: steps.check.outputs.skip == 'no'
       shell: bash
       run: |
         cd vim/src
@@ -283,14 +288,14 @@ jobs:
         sed -i -e "/VIM_VERSION_PATCHLEVEL/s/0/$patchlevel/" version.h
 
     - name: Copy src directory to src2
-      if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
+      if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
         cd vim
         xcopy src src2\ /E > nul
 
     - name: Build
-      if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
+      if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
         call "%VCVARSALL%" ${{ matrix.vcarch }}
@@ -314,7 +319,7 @@ jobs:
         nmake -nologo -f Make_mvc.mak install-all
 
     - name: Test
-      if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
+      if: steps.check.outputs.skip == 'no'
       shell: cmd
       timeout-minutes: 20
       run: |
@@ -359,7 +364,7 @@ jobs:
         )
 
     - name: Package
-      if: steps.check.outputs.skip == 'no' || github.event_name == 'pull_request'
+      if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
         cd package

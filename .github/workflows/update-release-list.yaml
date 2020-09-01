@@ -1,6 +1,8 @@
 name: Update Release List
 
 on:
+  #release:
+  #  types: [published]
   workflow_run:
     workflows: ["Build Vim"]
     branches: [master]
@@ -24,6 +26,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
+        fetch-depth: 0
         path: main
 
     - uses: actions/checkout@v2

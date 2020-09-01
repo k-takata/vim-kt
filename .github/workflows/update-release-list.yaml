@@ -26,7 +26,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        fetch-depth: 0
         path: main
 
     - uses: actions/checkout@v2
@@ -39,7 +38,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd main
-        latest=$(git describe --tags --abbrev=0)
+        latest=$(cat vimver.txt)
         cd ../wiki
         ../main/scripts/update-release-list.py
         if git diff --quiet; then

@@ -86,7 +86,7 @@ jobs:
         echo "::set-output name=date::$(date +%Y%m%d)"
         git config --global core.autocrlf input
         python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
-        echo "::set-env name=PYTHON3_DIR::$python3_dir"
+        echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
     - uses: actions/checkout@v2
     - name: Checkout and update submodules

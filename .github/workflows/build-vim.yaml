@@ -23,9 +23,9 @@ env:
   LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win64_dllw6_lib.zip
   LUA_DIR: D:\Lua
   # Perl
-  PERL_VER: 530
-  PERL_VER_DOT: '5.30'
-  PERL_RELEASE: 5.30.2.1
+  PERL_VER: 532
+  PERL_VER_DOT: '5.32'
+  PERL_RELEASE: 5.32.0.1
   PERL32_URL: http://strawberryperl.com/download/%PERL_RELEASE%/strawberry-perl-%PERL_RELEASE%-32bit-portable.zip
   PERL64_URL: http://strawberryperl.com/download/%PERL_RELEASE%/strawberry-perl-%PERL_RELEASE%-64bit-portable.zip
   PERL_DIR: D:\Strawberry\perl

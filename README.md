@@ -43,6 +43,7 @@ The following plugins are included and enabled:
 
 * [vim-jp/autofmt](https://github.com/vim-jp/autofmt)
 * [vim-jp/vimdoc-ja](https://github.com/vim-jp/vimdoc-ja)
+* [k-takata/vim-mild](https://github.com/k-takata/vim-mild)
 
 The latest Japanese messages are also included:
 

@@ -389,6 +389,8 @@ jobs:
         del %DEST%\runtime\pack\dist-kt\start\autofmt\.gitignore
         xcopy ..\contrib\vimdoc-ja %DEST%\runtime\pack\dist-kt\start\vimdoc-ja /Y /E /V /I /R /Q
         del %DEST%\runtime\pack\dist-kt\start\vimdoc-ja\.gitignore
+        xcopy ..\contrib\vim-mild  %DEST%\runtime\pack\dist-kt\start\vim-mild  /Y /E /V /I /R /Q
+        rem del %DEST%\runtime\pack\dist-kt\start\vim-mild\.gitignore
         rem md artifacts
         set BASENAME=vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}
         7z a -mx=9 artifacts\%BASENAME%.zip %DEST%

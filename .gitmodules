@@ -7,3 +7,6 @@
 [submodule "contrib/lang-ja"]
 	path = contrib/lang-ja
 	url = https://github.com/vim-jp/lang-ja.git
+[submodule "contrib/vim-mild"]
+	path = contrib/vim-mild
+	url = https://github.com/k-takata/vim-mild.git

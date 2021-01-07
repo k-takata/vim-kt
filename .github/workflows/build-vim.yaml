@@ -89,7 +89,7 @@ jobs:
         echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
     - uses: actions/checkout@v2
-    - name: Checkout and update submodules
+    - name: Checkout submodules and update them
       shell: bash
       run: |
         # Checkout the lastest version, ignore error
@@ -124,7 +124,7 @@ jobs:
         fi
         git -C vim log -4 --color=always
 
-    - name: Checkout and apply patches
+    - name: Checkout patches and apply them
       shell: bash
       run: |
         if [ ! -d vim ]; then

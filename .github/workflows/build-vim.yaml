@@ -135,7 +135,7 @@ jobs:
         hg clone $MQREPO $patches
         # Apply patches
         sed -e '/ #+/d' -e 's/ #-.*$//' $patches/series | \
-          xargs -I{} --verbose patch -p1 -i $patches/{}
+          xargs -I{} --verbose patch -p1 --no-backup-if-mismatch -i $patches/{}
 
     - name: Get changelog
       id: changelog

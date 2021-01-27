@@ -464,7 +464,7 @@ jobs:
         fi
 
     - name: Create Release
-      uses: softprops/action-gh-release@9993ae8
+      uses: softprops/action-gh-release@9993ae85344fa542b3edb2533f97011277698cf6
       if: steps.commit.outputs.skip == 'no'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

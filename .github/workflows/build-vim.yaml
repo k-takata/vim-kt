@@ -30,8 +30,8 @@ env:
   PERL64_URL: http://strawberryperl.com/download/%PERL_RELEASE%/strawberry-perl-%PERL_RELEASE%-64bit-portable.zip
   PERL_DIR: D:\Strawberry\perl
   # Python 3
-  PYTHON3_VER: 38
-  PYTHON3_VER_DOT: '3.8'
+  PYTHON3_VER: 39
+  PYTHON3_VER_DOT: '3.9'
   # Ruby
   RUBY_VER: 27
   RUBY_VER_DOT: '2.7'

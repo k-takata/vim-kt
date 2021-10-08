@@ -480,7 +480,7 @@ jobs:
 
           * [LuaBinaries](http://luabinaries.sourceforge.net/download.html) ${{ env.LUA_VER_DOT }}
           * [Strawberry Perl](https://strawberryperl.com/) ${{ env.PERL_VER_DOT }}
-          * [Python3](https://www.python.org/downloads/) ${{ env.PYTHON3_VER_DOT }}
+          * [Python](https://www.python.org/downloads/) ${{ env.PYTHON3_VER_DOT }}
           * [RubyInstaller](https://rubyinstaller.org/downloads/) ${{ env.RUBY_VER_DOT }}
         draft: false
         prerelease: false

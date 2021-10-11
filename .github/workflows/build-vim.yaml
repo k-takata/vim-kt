@@ -25,9 +25,9 @@ env:
   # Perl
   PERL_VER: 532
   PERL_VER_DOT: '5.32'
-  PERL_RELEASE: 5.32.0.1
-  PERL32_URL: http://strawberryperl.com/download/%PERL_RELEASE%/strawberry-perl-%PERL_RELEASE%-32bit-portable.zip
-  PERL64_URL: http://strawberryperl.com/download/%PERL_RELEASE%/strawberry-perl-%PERL_RELEASE%-64bit-portable.zip
+  PERL_RELEASE: 5.32.1.1
+  PERL32_URL: https://strawberryperl.com/download/%PERL_RELEASE%/strawberry-perl-%PERL_RELEASE%-32bit-portable.zip
+  PERL64_URL: https://strawberryperl.com/download/%PERL_RELEASE%/strawberry-perl-%PERL_RELEASE%-64bit-portable.zip
   PERL_DIR: D:\Strawberry\perl
   # Python 3
   PYTHON3_VER: 39
@@ -37,7 +37,7 @@ env:
   RUBY_VER_DOT: '3.0'
   RUBY_API_VER_LONG: 3.0.0
   RUBY_BRANCH: ruby_3_0
-  RUBY_RELEASE: 3.0.0-1
+  RUBY_RELEASE: 3.0.2-1
   RUBY_SRC_URL: https://github.com/ruby/ruby/archive/%RUBY_BRANCH%.zip
   RUBY32_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-%RUBY_RELEASE%/rubyinstaller-%RUBY_RELEASE%-x86.7z
   RUBY64_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-%RUBY_RELEASE%/rubyinstaller-%RUBY_RELEASE%-x64.7z

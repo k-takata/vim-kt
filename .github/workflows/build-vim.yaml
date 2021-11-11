@@ -222,8 +222,8 @@ jobs:
         7z x downloads\perl.zip perl -o%PERL_DIR%\.. > nul || exit 1
 
         echo %COL_GREEN%Download Ruby%COL_RESET%
-        call :downloadfile %RUBY${{ matrix.bits }}_URL% downloads\ruby.zip
-        7z x downloads\ruby.zip -oD:\ > nul || exit 1
+        call :downloadfile %RUBY${{ matrix.bits }}_URL% downloads\ruby.7z
+        7z x downloads\ruby.7z -oD:\ > nul || exit 1
         move D:\rubyinstaller-%RUBY_RELEASE%-${{ matrix.arch }} %RUBY_DIR% > nul || exit 1
 
         echo %COL_GREEN%Download Ruby source%COL_RESET%

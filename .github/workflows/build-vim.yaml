@@ -19,19 +19,20 @@ env:
   LUA_VER: 54
   LUA_VER_DOT: '5.4'
   LUA_RELEASE: 5.4.2
-  LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win32_dllw6_lib.zip
-  LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win64_dllw6_lib.zip
+  LUA_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win%BITS%_dllw6_lib.zip
   LUA_DIR: D:\Lua
   # Perl
   PERL_VER: 532
   PERL_VER_DOT: '5.32'
   PERL_RELEASE: 5.32.1.1
-  PERL32_URL: https://strawberryperl.com/download/%PERL_RELEASE%/strawberry-perl-%PERL_RELEASE%-32bit-portable.zip
-  PERL64_URL: https://strawberryperl.com/download/%PERL_RELEASE%/strawberry-perl-%PERL_RELEASE%-64bit-portable.zip
+  PERL_URL: https://strawberryperl.com/download/%PERL_RELEASE%/strawberry-perl-%PERL_RELEASE%-%BITS%bit-portable.zip
   PERL_DIR: D:\Strawberry\perl
   # Python 3
-  PYTHON3_VER: 39
-  PYTHON3_VER_DOT: '3.9'
+  PYTHON3_VER: 310
+  PYTHON3_VER_DOT: '3.10'
+  PYTHON3_RELEASE: 3.10.0
+  PYTHON3_URL: https://www.python.org/ftp/python/%PYTHON3_RELEASE%/python-%PYTHON3_RELEASE%%PYARCH%.exe
+  PYTHON3_DIR: D:\python3
   # Ruby
   RUBY_VER: 30
   RUBY_VER_DOT: '3.0'
@@ -39,14 +40,12 @@ env:
   RUBY_BRANCH: ruby_3_0
   RUBY_RELEASE: 3.0.2-1
   RUBY_SRC_URL: https://github.com/ruby/ruby/archive/%RUBY_BRANCH%.zip
-  RUBY32_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-%RUBY_RELEASE%/rubyinstaller-%RUBY_RELEASE%-x86.7z
-  RUBY64_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-%RUBY_RELEASE%/rubyinstaller-%RUBY_RELEASE%-x64.7z
+  RUBY_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-%RUBY_RELEASE%/rubyinstaller-%RUBY_RELEASE%-%ARCH%.7z
   RUBY_DIR: D:\rubyinstaller
 
   # Other dependencies
   # gettext
-  GETTEXT32_URL: https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.21-v1.16/gettext0.21-iconv1.16-shared-32.zip
-  GETTEXT64_URL: https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.21-v1.16/gettext0.21-iconv1.16-shared-64.zip
+  GETTEXT_URL: https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.21-v1.16/gettext0.21-iconv1.16-shared-%BITS%.zip
   GETTEXT_DIR: D:\gettext
   # winpty
   WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
@@ -85,8 +84,8 @@ jobs:
       run: |
         echo "::set-output name=date::$(date +%Y%m%d)"
         git config --global core.autocrlf input
-        python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
-        echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
+        #python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
+        #echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
     - uses: actions/checkout@v2
     - name: Checkout submodules and update them
@@ -195,8 +194,9 @@ jobs:
         type NUL > urls.txt
         echo %LUA_RELEASE%>> urls.txt
         echo %PERL_RELEASE%>> urls.txt
+        echo %PYTHON3_RELEASE%>> urls.txt
         echo %RUBY_RELEASE%>> urls.txt
-        echo %GETTEXT${{ matrix.bits }}_URL%>> urls.txt
+        echo %GETTEXT_URL%>> urls.txt
         echo %WINPTY_URL%>> urls.txt
 
     - name: Cache downloaded files
@@ -211,18 +211,29 @@ jobs:
       shell: cmd
       run: |
         path C:\Program Files\7-Zip;%path%
+        set BITS=${{ matrix.bits }}
+        set ARCH=${{ matrix.arch }}
+        if ${{ matrix.arch }}==x64 (
+          set PYARCH=-amd64
+        ) else (
+          set PYARCH=
+        )
 
         echo %COL_GREEN%Download Lua%COL_RESET%
-        call :downloadfile %LUA${{ matrix.bits }}_URL% downloads\lua.zip
+        call :downloadfile %LUA_URL% downloads\lua.zip
         7z x downloads\lua.zip -o%LUA_DIR% > nul || exit 1
 
         echo %COL_GREEN%Download Perl%COL_RESET%
-        call :downloadfile %PERL${{ matrix.bits }}_URL% downloads\perl.zip
+        call :downloadfile %PERL_URL% downloads\perl.zip
         :: Extract only the "perl" folder.
         7z x downloads\perl.zip perl -o%PERL_DIR%\.. > nul || exit 1
 
+        echo %COL_GREEN%Download Python3%COL_RESET%
+        call :downloadfile %PYTHON3_URL% downloads\python3.exe
+        start /wait downloads\python3.exe /quiet TargetDir=%PYTHON3_DIR% Include_pip=0 Include_tcltk=0 Include_test=0 Include_tools=0 AssociateFiles=0 Shortcuts=0 Include_doc=0 Include_launcher=0 InstallLauncherAllUsers=0
+
         echo %COL_GREEN%Download Ruby%COL_RESET%
-        call :downloadfile %RUBY${{ matrix.bits }}_URL% downloads\ruby.7z
+        call :downloadfile %RUBY_URL% downloads\ruby.7z
         7z x downloads\ruby.7z -oD:\ > nul || exit 1
         move D:\rubyinstaller-%RUBY_RELEASE%-${{ matrix.arch }} %RUBY_DIR% > nul || exit 1
 
@@ -233,7 +244,7 @@ jobs:
         move ..\ruby-%RUBY_BRANCH% ..\ruby > nul || exit 1
 
         echo %COL_GREEN%Download gettext%COL_RESET%
-        call :downloadfile %GETTEXT${{ matrix.bits }}_URL% downloads\gettext.zip
+        call :downloadfile %GETTEXT_URL% downloads\gettext.zip
         7z e -y downloads\gettext.zip -o%GETTEXT_DIR% > nul || exit 1
 
         echo %COL_GREEN%Download winpty%COL_RESET%

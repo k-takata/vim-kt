@@ -281,8 +281,11 @@ jobs:
       shell: cmd
       run: |
         call "%VCVARSALL%" ${{ matrix.vcarch }}
-        copy /y contrib\lang-ja\src\po\ja.po vim\src\po
+        pushd contrib\lang-ja\runtime\lang
+        make update
+        popd
         copy /y contrib\lang-ja\runtime\lang\menu_ja*.vim vim\runtime\lang
+        copy /y contrib\lang-ja\src\po\ja.po vim\src\po
         cd vim\src\po
         cl sjiscorr.c
         iconv -f utf-8 -t cp932 ja.po | sjiscorr | dos2unix > ja.sjis.po

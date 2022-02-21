@@ -45,7 +45,7 @@ The following plugins are included and enabled:
 * [vim-jp/vimdoc-ja](https://github.com/vim-jp/vimdoc-ja)
 * [k-takata/vim-mild](https://github.com/k-takata/vim-mild)
 
-The latest Japanese messages are also included:
+The latest Japanese messages and menu files are also included:
 
 * [vim-jp/lang-ja](https://github.com/vim-jp/lang-ja)
 
@@ -53,5 +53,6 @@ The latest Japanese messages are also included:
 
 The following packages are also included:
 
-* [gettext-iconv-windows](https://github.com/mlocati/gettext-iconv-windows)
-* [winpty](https://github.com/rprichard/winpty)
+* [gettext-iconv-windows](https://github.com/mlocati/gettext-iconv-windows) gettext 0.21 + iconv 1.16
+* [winpty](https://github.com/rprichard/winpty) 0.4.3
+* [libsodium](https://download.libsodium.org/libsodium/releases/) 1.0.18

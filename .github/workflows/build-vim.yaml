@@ -49,6 +49,10 @@ env:
   GETTEXT_DIR: D:\gettext
   # winpty
   WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
+  # libsodium
+  SODIUM_RELEASE: '1.0.18'
+  SODIUM_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_RELEASE%-stable-msvc.zip
+  SODIUM_DIR: D:\libsodium
 
   # Escape sequences
   COL_RED: "\x1b[31m"
@@ -67,12 +71,14 @@ jobs:
           - arch: x64
             vcarch: amd64
             warch: x64
+            sodiumarch: x64
             bits: 64
             cygreg: registry
             pyreg: ""
           - arch: x86
             vcarch: x86
             warch: ia32
+            sodiumarch: Win32
             bits: 32
             cygreg: registry32
             pyreg: "-32"
@@ -198,6 +204,7 @@ jobs:
         echo %RUBY_RELEASE%>> urls.txt
         echo %GETTEXT_URL%>> urls.txt
         echo %WINPTY_URL%>> urls.txt
+        echo %SODIUM_RELEASE%>> urls.txt
 
     - name: Cache downloaded files
       if: steps.check.outputs.skip == 'no'
@@ -252,6 +259,11 @@ jobs:
         7z x -y downloads\winpty.zip -oD:\winpty > nul || exit 1
         copy /Y D:\winpty\${{ matrix.warch }}\bin\winpty.dll        vim\src\winpty${{ matrix.bits }}.dll
         copy /Y D:\winpty\${{ matrix.warch }}\bin\winpty-agent.exe  vim\src\
+
+        echo %COL_GREEN%Download libsodium%COL_RESET%
+        call :downloadfile %SODIUM_URL% downloads\libsodium.zip
+        7z x -y downloads\libsodium.zip -oD:\ > nul || exit 1
+        copy /Y D:\libsodium\${{ matrix.sodiumarch }}\Release\v142\dynamic\libsodium.dll  vim\src\
 
         goto :eof
 
@@ -322,6 +334,7 @@ jobs:
           DYNAMIC_PERL=yes PERL=%PERL_DIR% ^
           DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR% ^
           DYNAMIC_RUBY=yes RUBY=%RUBY_DIR% RUBY_MSVCRT_NAME=msvcrt ^
+          SODIUM=%SODIUM_DIR% ^
           || exit 1
         if not exist vim${{ matrix.bits }}.dll (
           echo %COL_RED%Build failure.%COL_RESET%
@@ -388,6 +401,7 @@ jobs:
         copy ..\vim\src\vim*.dll  %DEST%
         copy ..\vim\src\tee\*.exe %DEST%
         copy ..\vim\src\xxd\*.exe %DEST%
+        copy ..\vim\src\libsodium.dll %DEST%
         copy ..\vim\src\winpty*   %DEST%
         copy ..\vim\LICENSE       %DEST%
         copy ..\README.md         %DEST%

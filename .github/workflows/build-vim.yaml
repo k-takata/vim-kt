@@ -276,12 +276,13 @@ jobs:
         nmake -nologo .config.h.time || exit 1
         xcopy /s .ext\include %RUBY_DIR%\include\ruby-%RUBY_API_VER_LONG%
 
-    - name: Update ja.po
+    - name: Update ja.po and menu_ja
       if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
         call "%VCVARSALL%" ${{ matrix.vcarch }}
         copy /y contrib\lang-ja\src\po\ja.po vim\src\po
+        copy /y contrib\lang-ja\runtime\lang\menu_ja*.vim vim\runtime\lang
         cd vim\src\po
         cl sjiscorr.c
         iconv -f utf-8 -t cp932 ja.po | sjiscorr | dos2unix > ja.sjis.po

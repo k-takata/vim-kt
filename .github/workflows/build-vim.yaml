@@ -344,13 +344,11 @@ jobs:
         nmake -nologo -f Make_mvc.mak GETTEXT_PATH="\"%GITBIN%\"" || exit 1
         nmake -nologo -f Make_mvc.mak install-all
 
-    - name: Test
+    - name: Check version
       if: steps.check.outputs.skip == 'no'
       shell: cmd
-      timeout-minutes: 20
       run: |
         path %LUA_DIR%;%PERL_DIR%\bin;%PYTHON3_DIR%;%RUBY_DIR%\bin;%RUBY_DIR%\bin\ruby_builtin_dlls;%GETTEXT_DIR%;%path%
-        call "%VCVARSALL%" ${{ matrix.vcarch }}
         cd vim\src
         echo.
         echo %COL_GREEN%gvim version:%COL_RESET%
@@ -363,20 +361,36 @@ jobs:
         .\vim --not-a-term -u NONE -S ..\..\scripts\if_ver.vim -c quit
         type if_ver.txt
 
+    - name: Test and show the result of testing gVim
+      if: steps.check.outputs.skip == 'no'
+      shell: cmd
+      timeout-minutes: 15
+      run: |
+        path %LUA_DIR%;%PERL_DIR%\bin;%PYTHON3_DIR%;%RUBY_DIR%\bin;%RUBY_DIR%\bin\ruby_builtin_dlls;%GETTEXT_DIR%;%path%
+        call "%VCVARSALL%" ${{ matrix.vcarch }}
+        cd vim
+
         echo %COL_GREEN%Start testing vim in background.%COL_RESET%
-        start cmd /c "cd ..\src2\testdir & nmake -nologo -f Make_dos.mak VIMPROG=..\..\src\vim > nul & echo done>done.txt"
+        start cmd /c "cd src2\testdir & nmake -nologo -f Make_dos.mak VIMPROG=..\..\src\vim > nul & echo done>done.txt"
 
         echo %COL_GREEN%Test gvim:%COL_RESET%
-        cd testdir
+        cd src\testdir
         nmake -nologo -f Make_dos.mak VIMPROG=..\gvim || exit 1
         cd ..
 
+    - name: Show the result of testing Vim
+      if: steps.check.outputs.skip == 'no'
+      shell: cmd
+      timeout-minutes: 10
+      run: |
+        path %LUA_DIR%;%PERL_DIR%\bin;%PYTHON3_DIR%;%RUBY_DIR%\bin;%RUBY_DIR%\bin\ruby_builtin_dlls;%GETTEXT_DIR%;%path%
+        call "%VCVARSALL%" ${{ matrix.vcarch }}
         echo %COL_GREEN%Wait for vim tests to finish.%COL_RESET%
-        cd ..\src2\testdir
+        cd vim\src2\testdir
         :: Wait about 10 minutes.
-        for /L %%i in (1,1,600) do (
+        for /L %%i in (1,1,60) do (
           if exist done.txt goto exitloop
-          ping -n 2 localhost > nul
+          ping -n 11 localhost > nul
         )
         set timeout=1
         :exitloop
@@ -389,7 +403,7 @@ jobs:
           exit 1
         )
 
-    - name: Package
+    - name: Packag
       if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |

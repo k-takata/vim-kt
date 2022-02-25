@@ -11,7 +11,6 @@ on:
 env:
   VIMREPO: https://github.com/vim/vim
   MQREPO: http://hg.pf.osdn.net/view/k/k_/k_takata/vim-ktakata-mq
-  VCVARSALL: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat
   GITBIN: C:\Program Files\Git\usr\bin
 
   # Interfaces
@@ -282,7 +281,7 @@ jobs:
       if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
-        call "%VCVARSALL%" ${{ matrix.vcarch }}
+        call vim\src\msvc-latest ${{ matrix.vcarch }}
         cd ..\ruby
         call win32\configure.bat
         nmake -nologo .config.h.time || exit 1
@@ -292,7 +291,7 @@ jobs:
       if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
-        call "%VCVARSALL%" ${{ matrix.vcarch }}
+        call vim\src\msvc-latest ${{ matrix.vcarch }}
         pushd contrib\lang-ja\runtime\lang
         make update
         popd
@@ -325,7 +324,7 @@ jobs:
       if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
-        call "%VCVARSALL%" ${{ matrix.vcarch }}
+        call vim\src\msvc-latest ${{ matrix.vcarch }}
         cd vim\src
         rem Build gvim/vim with VIMDLL
         nmake -nologo -f Make_mvc.mak ^
@@ -367,7 +366,7 @@ jobs:
       timeout-minutes: 15
       run: |
         path %LUA_DIR%;%PERL_DIR%\bin;%PYTHON3_DIR%;%RUBY_DIR%\bin;%RUBY_DIR%\bin\ruby_builtin_dlls;%GETTEXT_DIR%;%path%
-        call "%VCVARSALL%" ${{ matrix.vcarch }}
+        call vim\src\msvc-latest ${{ matrix.vcarch }}
         cd vim
 
         echo %COL_GREEN%Start testing vim in background.%COL_RESET%
@@ -384,7 +383,7 @@ jobs:
       timeout-minutes: 10
       run: |
         path %LUA_DIR%;%PERL_DIR%\bin;%PYTHON3_DIR%;%RUBY_DIR%\bin;%RUBY_DIR%\bin\ruby_builtin_dlls;%GETTEXT_DIR%;%path%
-        call "%VCVARSALL%" ${{ matrix.vcarch }}
+        call vim\src\msvc-latest ${{ matrix.vcarch }}
         echo %COL_GREEN%Wait for vim tests to finish.%COL_RESET%
         cd vim\src2\testdir
         :: Wait about 10 minutes.
@@ -403,7 +402,7 @@ jobs:
           exit 1
         )
 
-    - name: Packag
+    - name: Package
       if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |

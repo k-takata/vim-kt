@@ -402,7 +402,7 @@ jobs:
           exit 1
         )
 
-    - name: Packag
+    - name: Package
       if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |

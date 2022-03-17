@@ -64,6 +64,7 @@ jobs:
     runs-on: windows-latest
 
     strategy:
+      fail-fast: false
       matrix:
         arch: [x64, x86]
         include:

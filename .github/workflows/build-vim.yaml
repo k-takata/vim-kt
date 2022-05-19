@@ -93,7 +93,7 @@ jobs:
         #python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
         #echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Checkout submodules and update them
       shell: bash
       run: |
@@ -208,7 +208,7 @@ jobs:
 
     - name: Cache downloaded files
       if: steps.check.outputs.skip == 'no'
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: downloads
         key: ${{ runner.os }}-${{ matrix.bits }}-${{ hashFiles('urls.txt') }}
@@ -439,7 +439,7 @@ jobs:
         7z a -mx=9 artifacts\%BASENAME%-pdb.7z *.pdb
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v3
       with:
         name: vim-kt-win${{ matrix.bits }}
         path: ./package/artifacts
@@ -455,7 +455,7 @@ jobs:
       run: |
         git config --global core.autocrlf input
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Checkout and update submodules
       shell: bash
       run: |
@@ -466,14 +466,16 @@ jobs:
         done
 
     - name: Download Artifact (win32)
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v3
       with:
         name: vim-kt-win32
+        path: vim-kt-win32
 
     - name: Download Artifact (win64)
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v3
       with:
         name: vim-kt-win64
+        path: vim-kt-win64
 
     - name: Get changelog
       id: changelog

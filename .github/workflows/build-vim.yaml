@@ -495,8 +495,6 @@ jobs:
       id: commit
       shell: bash
       run: |
-        git -C vim fetch origin
-        git -C vim checkout $(cat vim-kt-win64/latestrev.txt)
         if git diff --quiet HEAD vimver.txt; then
           echo ${COL_YELLOW}No updates.${COL_RESET}
           echo "::set-output name=skip::yes"

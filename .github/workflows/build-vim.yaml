@@ -13,6 +13,10 @@ env:
   MQREPO: http://hg.pf.osdn.net/view/k/k_/k_takata/vim-ktakata-mq
   GITBIN: C:\Program Files\Git\usr\bin
 
+  # Account for committing
+  USER_NAME: "vim-kt CI"
+  USER_EMAIL: "k-takata@users.noreply.github.com"
+
   # Interfaces
   # Lua
   LUA_VER: 54
@@ -148,15 +152,15 @@ jobs:
       run: |
         mkdir package/artifacts
         if [ ! -d vim ] || [ "$(git -C vim tag)" = "" ]; then
-          cp vimver.txt package/artifacts/latest.txt
+          cp vimver.txt package/artifacts/latesttag.txt
           touch package/artifacts/changelog.md
           exit 0
         fi
         cd vim
-        latest=$(git describe --tags --abbrev=0)
-        echo "::set-output name=ref::${latest:1}"
-        echo $latest > ../package/artifacts/latest.txt
-        echo $latest > ../vimver.txt
+        latesttag=$(git describe --tags --abbrev=0)
+        echo "::set-output name=ref::${latesttag:1}"
+        echo $latesttag > ../package/artifacts/latesttag.txt
+        echo $latesttag > ../vimver.txt
         git rev-parse HEAD > ../package/artifacts/latestrev.txt
         oldrev=$(cat ../vimrev.txt)
         if git log --format='format:' $oldrev > /dev/null 2>&1; then
@@ -181,7 +185,7 @@ jobs:
       id: check
       shell: bash
       run: |
-        if git diff --quiet HEAD vimver.txt; then
+        if git diff --exit-code HEAD vimver.txt; then
           echo ${COL_YELLOW}No updates.${COL_RESET}
           if [ "${{ github.event_name }}" = 'pull_request' ]; then
             # Don't skip on pull_request even if there are no updates.
@@ -483,25 +487,27 @@ jobs:
       run: |
         changelog=$(cat vim-kt-win64/changelog.md)
         echo "::set-output name=log::$changelog"
-        latest=$(cat vim-kt-win64/latest.txt)
-        echo "::set-output name=ref::${latest:1}"
-        echo $latest > vimver.txt
+        latesttag=$(cat vim-kt-win64/latesttag.txt)
+        echo "::set-output name=tag::${latesttag}"
+        cp vim-kt-win64/latesttag.txt vimver.txt
 
     - name: Commit and push
       id: commit
       shell: bash
       run: |
+        git -C vim fetch origin
+        git -C vim checkout $(cat vim-kt-win64/latestrev.txt)
         if git diff --quiet HEAD vimver.txt; then
           echo ${COL_YELLOW}No updates.${COL_RESET}
           echo "::set-output name=skip::yes"
         else
           cp vim-kt-win64/latestrev.txt vimrev.txt
-          git config --local user.name "vim-kt CI"
-          git config --local user.email "k-takata@users.noreply.github.com"
+          git config --local user.name "$USER_NAME"
+          git config --local user.email "$USER_EMAIL"
           git commit -a \
-            -m "Update Vim to v${{ steps.changelog.outputs.ref }}" \
+            -m "Update Vim to ${{ steps.changelog.outputs.tag }}" \
             -m "$(cat vim-kt-win64/changelog.txt)"
-          git tag "v${{ steps.changelog.outputs.ref }}"
+          git tag "${{ steps.changelog.outputs.tag }}"
           git push origin HEAD --tags
           echo "::set-output name=skip::no"
         fi
@@ -512,8 +518,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: v${{ steps.changelog.outputs.ref }}
-        name:  v${{ steps.changelog.outputs.ref }}
+        tag_name: ${{ steps.changelog.outputs.tag }}
+        name:  ${{ steps.changelog.outputs.tag }}
         body: |
           ### Changes:
 

@@ -128,6 +128,7 @@ jobs:
       shell: bash
       run: |
         if ! git clone ${VIMREPO}.git --shallow-exclude="$(cat vimver.txt)"; then
+          # No new commits since the version written in vimver.txt.
           if [ "${{ github.event_name }}" = 'pull_request' ]; then
             git clone ${VIMREPO}.git --depth=5
           else
@@ -155,10 +156,9 @@ jobs:
       run: |
         mkdir package/artifacts
         if [ ! -d vim ] || [ "$(git -C vim tag)" = "" ]; then
-          cp vimver.txt package/artifacts/latesttag.txt
-          touch package/artifacts/changelog.md
           exit 0
         fi
+
         cd vim
         latesttag=$(git describe --tags --abbrev=0)
         echo "::set-output name=ref::${latesttag:1}"
@@ -172,6 +172,7 @@ jobs:
           logopt=--
         fi
         commiturl=${VIMREPO}/commit/
+        echo "ChangeLog in Markdown:"
         git log --format='format:%H %s' $logopt | \
           sed -e 's/[][_*^<`\\]/\\&/g' \
               -e 's/%/%25/g' \
@@ -180,6 +181,7 @@ jobs:
           sed -e ':a;N;$!ba;s/\n/%0A/g' | \
           tee ../package/artifacts/changelog.md
         echo
+        echo "ChangeLog in text:"
         git log --format='format:* %s' $logopt | \
           sed -e 's/^\* patch /* /g' | \
           tee ../package/artifacts/changelog.txt

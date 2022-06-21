@@ -455,19 +455,13 @@ jobs:
         path: ./package/artifacts
 
   release:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: [build]
     if: (github.event_name != 'pull_request') && (needs.build.outputs.skip == 'no')
 
     steps:
-    - name: Initalize
-      shell: bash
-      run: |
-        git config --global core.autocrlf input
-
     - uses: actions/checkout@v3
     - name: Checkout and update submodules
-      shell: bash
       run: |
         # Checkout the lastest version, ignore error
         git submodule update --init --depth 1 || true
@@ -489,7 +483,6 @@ jobs:
 
     - name: Get changelog
       id: changelog
-      shell: bash
       run: |
         changelog=$(cat vim-kt-win64/changelog.md)
         echo "::set-output name=log::$changelog"
@@ -499,7 +492,6 @@ jobs:
 
     - name: Commit and push
       id: commit
-      shell: bash
       run: |
         if git diff --quiet HEAD vimver.txt; then
           echo ${COL_YELLOW}No updates.${COL_RESET}

@@ -17,6 +17,9 @@ env:
   USER_NAME: "vim-kt CI"
   USER_EMAIL: "k-takata@users.noreply.github.com"
 
+  # Modified By
+  MODIFIED_BY: "k-takata"
+
   # Interfaces
   # Lua
   LUA_VER: 54

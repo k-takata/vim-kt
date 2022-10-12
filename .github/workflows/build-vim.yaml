@@ -98,7 +98,7 @@ jobs:
       id: init
       shell: bash
       run: |
-        echo "::set-output name=date::$(date +%Y%m%d)"
+        echo "date=$(date +%Y%m%d)" >> $GITHUB_OUTPUT
         git config --global core.autocrlf input
         #python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
         #echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
@@ -164,7 +164,7 @@ jobs:
 
         cd vim
         latesttag=$(git describe --tags --abbrev=0)
-        echo "::set-output name=ref::${latesttag:1}"
+        echo "ref=${latesttag:1}" >> $GITHUB_OUTPUT
         echo $latesttag > ../package/artifacts/latesttag.txt
         echo $latesttag > ../vimver.txt
         git rev-parse HEAD > ../package/artifacts/latestrev.txt
@@ -197,12 +197,12 @@ jobs:
           echo ${COL_YELLOW}No updates.${COL_RESET}
           if [ "${{ github.event_name }}" = 'pull_request' ]; then
             # Don't skip on pull_request even if there are no updates.
-            echo "::set-output name=skip::no"
+            echo "skip=no" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=skip::yes"
+            echo "skip=yes" >> $GITHUB_OUTPUT
           fi
         else
-          echo "::set-output name=skip::no"
+          echo "skip=no" >> $GITHUB_OUTPUT
         fi
 
     - name: Create a list of download URLs
@@ -488,9 +488,9 @@ jobs:
       id: changelog
       run: |
         changelog=$(cat vim-kt-win64/changelog.md)
-        echo "::set-output name=log::$changelog"
+        echo "log=$changelog" >> $GITHUB_OUTPUT
         latesttag=$(cat vim-kt-win64/latesttag.txt)
-        echo "::set-output name=tag::${latesttag}"
+        echo "tag=${latesttag}" >> $GITHUB_OUTPUT
         cp vim-kt-win64/latesttag.txt vimver.txt
 
     - name: Commit and push

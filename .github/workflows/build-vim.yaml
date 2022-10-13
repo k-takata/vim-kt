@@ -178,10 +178,8 @@ jobs:
         echo "ChangeLog in Markdown:"
         git log --format='format:%H %s' $logopt | \
           sed -e 's/[][_*^<`\\]/\\&/g' \
-              -e 's/%/%25/g' \
               -e "s#^\([0-9a-f]*\) patch \([0-9.a-z]*\)#* [\2]($commiturl\1)#" \
               -e "s#^\([0-9a-f]*\) \(.*\)#* [\2]($commiturl\1)#" | \
-          sed -e ':a;N;$!ba;s/\n/%0A/g' | \
           tee ../package/artifacts/changelog.md
         echo
         echo "ChangeLog in text:"
@@ -487,8 +485,18 @@ jobs:
     - name: Get changelog
       id: changelog
       run: |
-        changelog=$(cat vim-kt-win64/changelog.md)
-        echo "log=$changelog" >> $GITHUB_OUTPUT
+        cat << EOF > changelog.md
+        ### Changes:
+
+        $(cat vim-kt-win64/changelog.md)
+
+        ### Compiled with:
+
+        * [LuaBinaries](http://luabinaries.sourceforge.net/download.html) ${{ env.LUA_VER_DOT }}
+        * [Strawberry Perl](https://strawberryperl.com/) ${{ env.PERL_VER_DOT }}
+        * [Python](https://www.python.org/downloads/) ${{ env.PYTHON3_VER_DOT }}
+        * [RubyInstaller](https://rubyinstaller.org/downloads/) ${{ env.RUBY_VER_DOT }}
+        EOF
         latesttag=$(cat vim-kt-win64/latesttag.txt)
         echo "tag=${latesttag}" >> $GITHUB_OUTPUT
         cp vim-kt-win64/latesttag.txt vimver.txt
@@ -510,23 +518,11 @@ jobs:
         git push origin HEAD --tags
 
     - name: Create Release
-      uses: softprops/action-gh-release@9993ae85344fa542b3edb2533f97011277698cf6
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ steps.changelog.outputs.tag }}
-        name:  ${{ steps.changelog.outputs.tag }}
-        body: |
-          ### Changes:
-
-          ${{ steps.changelog.outputs.log }}
-
-          ### Compiled with:
-
-          * [LuaBinaries](http://luabinaries.sourceforge.net/download.html) ${{ env.LUA_VER_DOT }}
-          * [Strawberry Perl](https://strawberryperl.com/) ${{ env.PERL_VER_DOT }}
-          * [Python](https://www.python.org/downloads/) ${{ env.PYTHON3_VER_DOT }}
-          * [RubyInstaller](https://rubyinstaller.org/downloads/) ${{ env.RUBY_VER_DOT }}
+        name: ${{ steps.changelog.outputs.tag }}
+        body_path: changelog.md
         draft: false
         prerelease: false
         files: |

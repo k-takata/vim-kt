@@ -3,9 +3,7 @@
 redir! > if_ver.txt
 echo "*** Interface versions ***"
 echo "\nLua:"
-lua print(vim.lua_version, jit and "(LuaJIT)" or "")
-" echo "\nLuaJIT:"
-" lua print(jit.version)
+lua print(vim.lua_version, jit and "("..jit.version..")" or "")
 echo "\nMzScheme:"
 mzscheme (display (version))
 echo "\nPerl:"

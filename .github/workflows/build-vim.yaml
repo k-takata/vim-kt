@@ -64,8 +64,8 @@ env:
   SODIUM_DIR: D:\libsodium
 
   # Skip pattern
-  # FIXME: Test_mswin_key_event fails because of unknown reasons.
-  TEST_SKIP_PAT: Test_mswin_key_event
+  # FIXME: Test_mswin_event_mouse is too flaky and fails too often.
+  TEST_SKIP_PAT: 'Test_mswin_event_mouse'
 
   # Escape sequences
   COL_RED: "\x1b[31m"

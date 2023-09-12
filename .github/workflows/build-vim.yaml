@@ -110,7 +110,7 @@ jobs:
         #python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
         #echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Checkout submodules and update them
       shell: bash
       run: |
@@ -471,7 +471,7 @@ jobs:
       contents: write # to create release
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Checkout and update submodules
       run: |
         # Checkout the lastest version, ignore error

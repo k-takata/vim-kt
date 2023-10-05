@@ -37,9 +37,9 @@ env:
   PERL_URL: https://strawberryperl.com/download/%PERL_RELEASE%/strawberry-perl-%PERL_RELEASE%-%BITS%bit-portable.zip
   PERL_DIR: D:\Strawberry\perl
   # Python 3
-  PYTHON3_VER: 310
-  PYTHON3_VER_DOT: '3.10'
-  PYTHON3_RELEASE: 3.10.0
+  PYTHON3_VER: 312
+  PYTHON3_VER_DOT: '3.12'
+  PYTHON3_RELEASE: 3.12.0
   PYTHON3_URL: https://www.python.org/ftp/python/%PYTHON3_RELEASE%/python-%PYTHON3_RELEASE%%PYARCH%.exe
   PYTHON3_DIR: D:\python3
   # Ruby

@@ -349,7 +349,7 @@ jobs:
           GUI=yes IME=yes ICONV=yes VIMDLL=yes ^
           DYNAMIC_LUA=yes LUA=%LUA_DIR% ^
           DYNAMIC_PERL=yes PERL=%PERL_DIR% ^
-          DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR% ^
+          DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR% DYNAMIC_PYTHON3_STABLE_ABI=yes ^
           DYNAMIC_RUBY=yes RUBY=%RUBY_DIR% RUBY_MSVCRT_NAME=msvcrt ^
           SODIUM=%SODIUM_DIR% ^
           || exit 1

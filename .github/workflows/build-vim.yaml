@@ -59,7 +59,7 @@ env:
   # winpty
   WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
   # libsodium
-  SODIUM_RELEASE: '1.0.18'
+  SODIUM_RELEASE: '1.0.19'
   SODIUM_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_RELEASE%-stable-msvc.zip
   SODIUM_DIR: D:\libsodium
 

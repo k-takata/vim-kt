@@ -441,6 +441,7 @@ jobs:
         copy %GETTEXT_DIR%\libintl-8.dll  %DEST%
         rem if exist %GETTEXT_DIR%\libgcc_s_sjlj-1.dll copy %GETTEXT_DIR%\libgcc_s_sjlj-1.dll %DEST%
         xcopy ..\vim\runtime %DEST%\runtime /Y /E /V /I /H /R /Q
+        rd /S /Q %DEST%\runtime\syntax\testdir
         md %DEST%\runtime\pack\dist-kt\start
         :: Don't copy hidden files
         xcopy ..\contrib\autofmt   %DEST%\runtime\pack\dist-kt\start\autofmt   /Y /E /V /I /R /Q

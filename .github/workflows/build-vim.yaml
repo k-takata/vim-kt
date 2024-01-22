@@ -225,7 +225,7 @@ jobs:
 
     - name: Cache downloaded files
       if: steps.check.outputs.skip == 'no'
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: downloads
         key: ${{ runner.os }}-${{ matrix.bits }}-${{ hashFiles('urls.txt') }}

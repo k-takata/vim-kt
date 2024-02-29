@@ -14,7 +14,7 @@ permissions:
 env:
   VIMREPO: https://github.com/vim/vim
   MQREPO: http://hg.pf.osdn.net/view/k/k_/k_takata/vim-ktakata-mq
-  GITBIN: C:\Program Files\Git\usr\bin
+  MSYSBIN: C:\msys64\usr\bin
 
   # Account for committing
   USER_NAME: "vim-kt CI"
@@ -109,6 +109,10 @@ jobs:
         git config --global core.autocrlf input
         #python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
         #echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
+
+    #- uses: msys2/setup-msys2@v2
+    #  with:
+    #    install: gettext
 
     - uses: actions/checkout@v4
     - name: Checkout submodules and update them
@@ -358,7 +362,7 @@ jobs:
           exit 1
         )
         cd po
-        nmake -nologo -f Make_mvc.mak "GETTEXT_PATH=%GITBIN%" || exit 1
+        nmake -nologo -f Make_mvc.mak "GETTEXT_PATH=%MSYSBIN%" || exit 1
         nmake -nologo -f Make_mvc.mak install-all
 
     - name: Check version

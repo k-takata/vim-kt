@@ -358,7 +358,7 @@ jobs:
           exit 1
         )
         cd po
-        nmake -nologo -f Make_mvc.mak GETTEXT_PATH="%GITBIN%" || exit 1
+        nmake -nologo -f Make_mvc.mak "GETTEXT_PATH=%GITBIN%" || exit 1
         nmake -nologo -f Make_mvc.mak install-all
 
     - name: Check version

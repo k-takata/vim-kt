@@ -333,7 +333,7 @@ jobs:
       run: |
         cd vim/src
         patchlevel=$(sed -n -e '/included_patches/{n;n;n;s/ *\([0-9]*\).*/\1/p;q}' version.c)
-        sed -i -e "/VIM_VERSION_PATCHLEVEL/s/0/$patchlevel/" version.h
+        sed -i -e "s/^\(# define VIM_VERSION_PATCHLEVEL\s\+\).*/\1$patchlevel/" version.h
 
     - name: Copy src directory to src2
       if: steps.check.outputs.skip == 'no'

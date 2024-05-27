@@ -14,7 +14,7 @@ permissions:
 env:
   VIMREPO: https://github.com/vim/vim
   MQREPO: http://hg.pf.osdn.net/view/k/k_/k_takata/vim-ktakata-mq
-  MSYSBIN: C:\msys64\usr\bin
+  MSYSBIN: D:\msys64\usr\bin
 
   # Account for committing
   USER_NAME: "vim-kt CI"
@@ -54,7 +54,7 @@ env:
 
   # Other dependencies
   # gettext
-  GETTEXT_URL: https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.21-v1.16/gettext0.21-iconv1.16-shared-%BITS%.zip
+  #GETTEXT_URL: https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.21-v1.16/gettext0.21-iconv1.16-shared-%BITS%.zip
   GETTEXT_DIR: D:\gettext
   # winpty
   WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
@@ -89,6 +89,7 @@ jobs:
             bits: 64
             cygreg: registry
             pyreg: ""
+            sys: mingw64
           - arch: x86
             vcarch: x86
             warch: ia32
@@ -96,6 +97,7 @@ jobs:
             bits: 32
             cygreg: registry32
             pyreg: "-32"
+            sys: mingw32
 
     outputs:
       skip: ${{ steps.check.outputs.skip }}
@@ -110,9 +112,13 @@ jobs:
         #python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
         #echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
-    #- uses: msys2/setup-msys2@v2
-    #  with:
-    #    install: gettext
+    - uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        location: D:\
+        msystem: ${{ matrix.sys }}
+        install: gettext
+        pacboy: libiconv:p gettext-runtime:p
 
     - uses: actions/checkout@v4
     - name: Checkout submodules and update them
@@ -223,7 +229,7 @@ jobs:
         echo %PERL_RELEASE%>> urls.txt
         echo %PYTHON3_RELEASE%>> urls.txt
         echo %RUBY_RELEASE%>> urls.txt
-        echo %GETTEXT_URL%>> urls.txt
+        rem echo %GETTEXT_URL%>> urls.txt
         echo %WINPTY_URL%>> urls.txt
         echo %SODIUM_RELEASE%>> urls.txt
 
@@ -271,9 +277,13 @@ jobs:
         7z x downloads\ruby_src.zip */bin */include */enc/Makefile.in */win32 */common.mk -ir!version.h -xr!README.* -xr!*/win32/*.c -xr!*/win32/*.h -o.. > nul || exit 1
         move ..\ruby-%RUBY_BRANCH% ..\ruby > nul || exit 1
 
-        echo %COL_GREEN%Download gettext%COL_RESET%
-        call :downloadfile %GETTEXT_URL% downloads\gettext.zip
-        7z e -y downloads\gettext.zip -o%GETTEXT_DIR% > nul || exit 1
+        rem echo %COL_GREEN%Download gettext%COL_RESET%
+        rem call :downloadfile %GETTEXT_URL% downloads\gettext.zip
+        rem 7z e -y downloads\gettext.zip -o%GETTEXT_DIR% > nul || exit 1
+        echo %COL_GREEN%Prepare gettext%COL_RESET%
+        md %GETTEXT_DIR%
+        copy /Y D:\msys64\${{ matrix.sys }}\bin\libiconv-2.dll %GETTEXT_DIR%
+        copy /Y D:\msys64\${{ matrix.sys }}\bin\libintl-8.dll %GETTEXT_DIR%
 
         echo %COL_GREEN%Download winpty%COL_RESET%
         call :downloadfile %WINPTY_URL% downloads\winpty.zip

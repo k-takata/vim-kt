@@ -112,6 +112,11 @@ jobs:
         #python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
         #echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
+    - name: Enable 8.3 names for testing
+      shell: cmd
+      run: |
+        fsutil 8dot3name set D: 0
+
     - uses: msys2/setup-msys2@v2
       with:
         update: true

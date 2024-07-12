@@ -14,7 +14,7 @@ permissions:
 env:
   VIMREPO: https://github.com/vim/vim
   MQREPO: http://hg.pf.osdn.net/view/k/k_/k_takata/vim-ktakata-mq
-  MSYSBIN: D:\msys64\usr\bin
+  GETTEXT_PATH: D:\msys64\usr\bin
 
   # Account for committing
   USER_NAME: "vim-kt CI"
@@ -377,7 +377,7 @@ jobs:
           exit 1
         )
         cd po
-        nmake -nologo -f Make_mvc.mak "GETTEXT_PATH=%MSYSBIN%" || exit 1
+        nmake -nologo -f Make_mvc.mak || exit 1
         nmake -nologo -f Make_mvc.mak install-all
 
     - name: Check version

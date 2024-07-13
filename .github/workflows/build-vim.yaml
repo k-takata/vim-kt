@@ -7,6 +7,16 @@ on:
   pull_request:
   schedule:
     - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag name (in vim repo) to run'
+        required: true
+        type: string
+      base_commit:
+        description: 'Base commit or tag in vim-kt repo'
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -126,6 +136,12 @@ jobs:
         pacboy: libiconv:p gettext-runtime:p
 
     - uses: actions/checkout@v4
+      if: github.event_name != 'workflow_dispatch'
+    - uses: actions/checkout@v4
+      if: github.event_name == 'workflow_dispatch'
+      with:
+        ref: ${{inputs.base_commit}}
+
     - name: Checkout submodules and update them
       shell: bash
       run: |
@@ -159,6 +175,9 @@ jobs:
           else
             exit 0
           fi
+        fi
+        if [ "${{github.event_name}}" = 'workflow_dispatch' ]; then
+          git checkout "${{inputs.tag}}"
         fi
         git -C vim log -4 --color=always
 
@@ -224,7 +243,7 @@ jobs:
             echo "skip_release=yes" >> $GITHUB_OUTPUT
           fi
         else
-          if [ "${{ github.ref_name }}" = 'master' ]; then
+          if [ "${{ github.ref_name }}" = 'master' ] || [ "${{github.event_name}}" = 'workflow_dispatch' ]; then
             echo "skip=no" >> $GITHUB_OUTPUT
             echo "skip_release=no" >> $GITHUB_OUTPUT
           else
@@ -500,6 +519,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      if: github.event_name != 'workflow_dispatch'
+    - uses: actions/checkout@v4
+      if: github.event_name == 'workflow_dispatch'
+      with:
+        ref: ${{inputs.base_commit}}
+        ssh-key: ${{ secrets.VIM_KT_DEPLOY_KEY }}
+
     - name: Checkout and update submodules
       run: |
         # Checkout the lastest version, ignore error
@@ -542,6 +568,9 @@ jobs:
     - name: Commit and push
       id: commit
       run: |
+        if [ "${{github.event_name}}" = 'workflow_dispatch' ] && [ "${{inputs.base_commit}}" != 'master' ]; then
+          git switch -c "work-${{inputs.tag}}"
+        fi
         if git diff --quiet HEAD vimver.txt; then
           echo ${COL_YELLOW}No updates.${COL_RESET}
           exit 1  # This should not happen.

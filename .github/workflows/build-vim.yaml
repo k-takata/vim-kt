@@ -177,7 +177,7 @@ jobs:
           fi
         fi
         if [ "${{github.event_name}}" = 'workflow_dispatch' ]; then
-          git checkout "${{inputs.tag}}"
+          git -C vim checkout "${{inputs.tag}}"
         fi
         git -C vim log -4 --color=always
 

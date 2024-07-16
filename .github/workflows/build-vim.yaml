@@ -491,11 +491,14 @@ jobs:
         md %DEST%\runtime\pack\dist-kt\start
         :: Don't copy hidden files
         xcopy ..\contrib\autofmt   %DEST%\runtime\pack\dist-kt\start\autofmt   /Y /E /V /I /R /Q
-        del %DEST%\runtime\pack\dist-kt\start\autofmt\.gitignore
+        del /Q %DEST%\runtime\pack\dist-kt\start\autofmt\.git*
         xcopy ..\contrib\vimdoc-ja %DEST%\runtime\pack\dist-kt\start\vimdoc-ja /Y /E /V /I /R /Q
-        del %DEST%\runtime\pack\dist-kt\start\vimdoc-ja\.gitignore
+        del /Q %DEST%\runtime\pack\dist-kt\start\vimdoc-ja\.git*
         xcopy ..\contrib\vim-mild  %DEST%\runtime\pack\dist-kt\start\vim-mild  /Y /E /V /I /R /Q
-        rem del %DEST%\runtime\pack\dist-kt\start\vim-mild\.gitignore
+        rem del /Q %DEST%\runtime\pack\dist-kt\start\vim-mild\.git*
+        xcopy ..\vim\.hg\patches   %DEST%\patches   /Y /E /V /I /R /Q
+        rd /S /Q %DEST%\patches\.hg %DEST%\patches\scripts
+        del /Q %DEST%\patches\.hg* %DEST%\patches\appveyor.yml
         rem md artifacts
         set BASENAME=vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}
         7z a -mx=9 artifacts\%BASENAME%.zip %DEST%

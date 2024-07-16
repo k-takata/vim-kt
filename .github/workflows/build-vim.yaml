@@ -122,18 +122,10 @@ jobs:
         #python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
         #echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
-    - name: Enable 8.3 names for testing
-      shell: cmd
-      run: |
-        fsutil 8dot3name set D: 0
-
-    - uses: msys2/setup-msys2@v2
-      with:
-        update: true
-        location: D:\
-        msystem: ${{ matrix.sys }}
-        install: gettext
-        pacboy: libiconv:p gettext-runtime:p
+#    - name: Enable 8.3 names for testing
+#      shell: cmd
+#      run: |
+#        fsutil 8dot3name set D: 0
 
     - uses: actions/checkout@v4
       if: github.event_name != 'workflow_dispatch'
@@ -141,29 +133,6 @@ jobs:
       if: github.event_name == 'workflow_dispatch'
       with:
         ref: ${{inputs.base_commit}}
-
-    - name: Checkout submodules and update them
-      shell: bash
-      run: |
-        # Checkout the lastest version, ignore error
-        git submodule update --init --depth 1 || true
-        for i in contrib/*/; do
-          git -C $i checkout master
-        done
-
-#    # See: https://github.com/nelsonjchen/reverse-rdp-windows-github-actions
-#    - name: Enable RDP
-#      env:
-#        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
-#      run: |
-#        Invoke-WebRequest https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
-#        Expand-Archive ngrok.zip
-#        .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
-#        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
-#        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-#        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
-#        Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
-#        Start-Process .\ngrok\ngrok.exe -ArgumentList "tcp 3389"
 
     - name: Checkout Vim
       shell: bash
@@ -180,19 +149,6 @@ jobs:
           git -C vim checkout "${{inputs.tag}}"
         fi
         git -C vim log -4 --color=always
-
-    - name: Checkout patches and apply them
-      shell: bash
-      run: |
-        if [ ! -d vim ]; then
-          exit 0
-        fi
-        cd vim
-        patches=.hg/patches
-        hg clone $MQREPO $patches
-        # Apply patches
-        sed -e '/ #+/d' -e 's/ #-.*$//' $patches/series | \
-          xargs -I{} --verbose patch -p1 --no-backup-if-mismatch -i $patches/{}
 
     - name: Get changelog
       id: changelog
@@ -251,6 +207,50 @@ jobs:
             echo "skip_release=yes" >> $GITHUB_OUTPUT
           fi
         fi
+
+    - name: Checkout patches and apply them
+      if: steps.check.outputs.skip == 'no'
+      shell: bash
+      run: |
+        cd vim
+        patches=.hg/patches
+        hg clone $MQREPO $patches
+        # Apply patches
+        sed -e '/ #+/d' -e 's/ #-.*$//' $patches/series | \
+          xargs -I{} --verbose patch -p1 --no-backup-if-mismatch -i $patches/{}
+
+    - name: Checkout submodules and update them
+      if: steps.check.outputs.skip == 'no'
+      shell: bash
+      run: |
+        # Checkout the lastest version, ignore error
+        git submodule update --init --depth 1 || true
+        for i in contrib/*/; do
+          git -C $i checkout master
+        done
+
+    - uses: msys2/setup-msys2@v2
+      if: steps.check.outputs.skip == 'no'
+      with:
+        update: true
+        location: D:\
+        msystem: ${{ matrix.sys }}
+        install: gettext
+        pacboy: libiconv:p gettext-runtime:p
+
+#    # See: https://github.com/nelsonjchen/reverse-rdp-windows-github-actions
+#    - name: Enable RDP
+#      env:
+#        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+#      run: |
+#        Invoke-WebRequest https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
+#        Expand-Archive ngrok.zip
+#        .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
+#        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
+#        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+#        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
+#        Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
+#        Start-Process .\ngrok\ngrok.exe -ArgumentList "tcp 3389"
 
     - name: Create a list of download URLs
       if: steps.check.outputs.skip == 'no'

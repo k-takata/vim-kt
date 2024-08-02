@@ -217,7 +217,7 @@ jobs:
         hg clone $MQREPO $patches
         # Apply patches
         sed -e '/ #+/d' -e 's/ #-.*$//' $patches/series | \
-          xargs -I{} --verbose git apply $patches/{}
+          xargs -I{} --verbose git apply -C1 $patches/{}
 
     - name: Checkout submodules and update them
       if: steps.check.outputs.skip == 'no'

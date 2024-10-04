@@ -326,6 +326,7 @@ jobs:
         md %GETTEXT_DIR%
         copy /Y D:\msys64\${{ matrix.sys }}\bin\libiconv-2.dll %GETTEXT_DIR%
         copy /Y D:\msys64\${{ matrix.sys }}\bin\libintl-8.dll %GETTEXT_DIR%
+        if "${{ matrix.sys }}"=="mingw32" copy /Y D:\msys64\${{ matrix.sys }}\bin\libgcc_s_dw2-1.dll %GETTEXT_DIR%
 
         echo %COL_GREEN%Download winpty%COL_RESET%
         call :downloadfile %WINPTY_URL% downloads\winpty.zip
@@ -496,6 +497,7 @@ jobs:
         copy %GETTEXT_DIR%\libiconv-2.dll %DEST%
         copy %GETTEXT_DIR%\libintl-8.dll  %DEST%
         rem if exist %GETTEXT_DIR%\libgcc_s_sjlj-1.dll copy %GETTEXT_DIR%\libgcc_s_sjlj-1.dll %DEST%
+        if exist %GETTEXT_DIR%\libgcc_s_dw2-1.dll copy %GETTEXT_DIR%\libgcc_s_dw2-1.dll %DEST%
         xcopy ..\vim\runtime %DEST%\runtime /Y /E /V /I /H /R /Q
         rd /S /Q %DEST%\runtime\syntax\testdir
         md %DEST%\runtime\pack\dist-kt\start

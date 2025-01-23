@@ -481,41 +481,45 @@ jobs:
       if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
+        :: Fix symlink
+        del /f vim\runtime\doc\pi_netrw.txt
+        copy /y vim\runtime\pack\dist\opt\netrw\doc\netrw.txt vim\runtime\doc\pi_netrw.txt || exit 1
+
         cd package
         set DEST=vim-kt-win${{ matrix.bits }}
         md %DEST%
-        copy ..\vim\src\*.pdb     .
-        copy ..\vim\src\*vim*.exe %DEST%
-        copy ..\vim\src\vim*.dll  %DEST%
-        copy ..\vim\src\tee\*.exe %DEST%
-        copy ..\vim\src\xxd\*.exe %DEST%
-        copy ..\vim\src\libsodium.dll %DEST%
-        copy ..\vim\src\winpty*   %DEST%
-        copy ..\vim\LICENSE       %DEST%
-        copy ..\README.md         %DEST%
-        copy %LUA_DIR%\lua*.dll   %DEST%
-        copy %GETTEXT_DIR%\libiconv-2.dll %DEST%
-        copy %GETTEXT_DIR%\libintl-8.dll  %DEST%
-        rem if exist %GETTEXT_DIR%\libgcc_s_sjlj-1.dll copy %GETTEXT_DIR%\libgcc_s_sjlj-1.dll %DEST%
-        if exist %GETTEXT_DIR%\libgcc_s_dw2-1.dll copy %GETTEXT_DIR%\libgcc_s_dw2-1.dll %DEST%
-        xcopy ..\vim\runtime %DEST%\runtime /Y /E /V /I /H /R /Q
+        copy ..\vim\src\*.pdb     . || exit 1
+        copy ..\vim\src\*vim*.exe %DEST% || exit 1
+        copy ..\vim\src\vim*.dll  %DEST% || exit 1
+        copy ..\vim\src\tee\*.exe %DEST% || exit 1
+        copy ..\vim\src\xxd\*.exe %DEST% || exit 1
+        copy ..\vim\src\libsodium.dll %DEST% || exit 1
+        copy ..\vim\src\winpty*   %DEST% || exit 1
+        copy ..\vim\LICENSE       %DEST% || exit 1
+        copy ..\README.md         %DEST% || exit 1
+        copy %LUA_DIR%\lua*.dll   %DEST% || exit 1
+        copy %GETTEXT_DIR%\libiconv-2.dll %DEST% || exit 1
+        copy %GETTEXT_DIR%\libintl-8.dll  %DEST% || exit 1
+        rem if exist %GETTEXT_DIR%\libgcc_s_sjlj-1.dll copy %GETTEXT_DIR%\libgcc_s_sjlj-1.dll %DEST% || exit 1
+        if exist %GETTEXT_DIR%\libgcc_s_dw2-1.dll copy %GETTEXT_DIR%\libgcc_s_dw2-1.dll %DEST% || exit 1
+        xcopy ..\vim\runtime %DEST%\runtime /Y /E /V /I /H /R /Q || exit 1
         rd /S /Q %DEST%\runtime\syntax\testdir
         md %DEST%\runtime\pack\dist-kt\start
         :: Don't copy hidden files
-        xcopy ..\contrib\autofmt   %DEST%\runtime\pack\dist-kt\start\autofmt   /Y /E /V /I /R /Q
+        xcopy ..\contrib\autofmt   %DEST%\runtime\pack\dist-kt\start\autofmt   /Y /E /V /I /R /Q || exit 1
         del /Q %DEST%\runtime\pack\dist-kt\start\autofmt\.git*
-        xcopy ..\contrib\vimdoc-ja %DEST%\runtime\pack\dist-kt\start\vimdoc-ja /Y /E /V /I /R /Q
+        xcopy ..\contrib\vimdoc-ja %DEST%\runtime\pack\dist-kt\start\vimdoc-ja /Y /E /V /I /R /Q || exit 1
         del /Q %DEST%\runtime\pack\dist-kt\start\vimdoc-ja\.git*
-        xcopy ..\contrib\vim-mild  %DEST%\runtime\pack\dist-kt\start\vim-mild  /Y /E /V /I /R /Q
+        xcopy ..\contrib\vim-mild  %DEST%\runtime\pack\dist-kt\start\vim-mild  /Y /E /V /I /R /Q || exit 1
         rem del /Q %DEST%\runtime\pack\dist-kt\start\vim-mild\.git*
-        xcopy ..\vim\.hg\patches   %DEST%\patches   /Y /E /V /I /R /Q
+        xcopy ..\vim\.hg\patches   %DEST%\patches   /Y /E /V /I /R /Q || exit 1
         rd /S /Q %DEST%\patches\.hg %DEST%\patches\scripts
         del /Q %DEST%\patches\.hg* %DEST%\patches\appveyor.yml
         rem md artifacts
         set BASENAME=vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}
-        7z a -mx=9 artifacts\%BASENAME%.zip %DEST%
-        7z a -mx=9 artifacts\%BASENAME%.7z  %DEST%
-        7z a -mx=9 artifacts\%BASENAME%-pdb.7z *.pdb
+        7z a -mx=9 artifacts\%BASENAME%.zip %DEST% || exit 1
+        7z a -mx=9 artifacts\%BASENAME%.7z  %DEST% || exit 1
+        7z a -mx=9 artifacts\%BASENAME%-pdb.7z *.pdb || exit 1
 
     - name: Upload Artifact
       if: steps.check.outputs.skip == 'no'

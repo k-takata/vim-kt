@@ -481,6 +481,10 @@ jobs:
       if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
+        :: Fix symlink
+        del /f vim\runtime\doc\pi_netrw.txt
+        copy /y vim\runtime\pack\dist\opt\netrw\doc\netrw.txt vim\runtime\doc\pi_netrw.txt || exit 1
+
         cd package
         set DEST=vim-kt-win${{ matrix.bits }}
         md %DEST%

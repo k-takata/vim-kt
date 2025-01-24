@@ -481,10 +481,6 @@ jobs:
       if: steps.check.outputs.skip == 'no'
       shell: cmd
       run: |
-        :: Fix symlink
-        del /f vim\runtime\doc\pi_netrw.txt
-        copy /y vim\runtime\pack\dist\opt\netrw\doc\netrw.txt vim\runtime\doc\pi_netrw.txt || exit 1
-
         cd package
         set DEST=vim-kt-win${{ matrix.bits }}
         md %DEST%
@@ -502,19 +498,29 @@ jobs:
         copy %GETTEXT_DIR%\libintl-8.dll  %DEST% || exit 1
         rem if exist %GETTEXT_DIR%\libgcc_s_sjlj-1.dll copy %GETTEXT_DIR%\libgcc_s_sjlj-1.dll %DEST% || exit 1
         if exist %GETTEXT_DIR%\libgcc_s_dw2-1.dll copy %GETTEXT_DIR%\libgcc_s_dw2-1.dll %DEST% || exit 1
-        xcopy ..\vim\runtime %DEST%\runtime /Y /E /V /I /H /R /Q || exit 1
+        robocopy ..\vim\runtime %DEST%\runtime /E /NP /NFL /NDL
+        if ERRORLEVEL 8 exit 1
         rd /S /Q %DEST%\runtime\syntax\testdir
         md %DEST%\runtime\pack\dist-kt\start
         :: Don't copy hidden files
-        xcopy ..\contrib\autofmt   %DEST%\runtime\pack\dist-kt\start\autofmt   /Y /E /V /I /R /Q || exit 1
+        robocopy ..\contrib\autofmt   %DEST%\runtime\pack\dist-kt\start\autofmt   /E /XA:H /NP /NFL /NDL
+        if ERRORLEVEL 8 exit 1
         del /Q %DEST%\runtime\pack\dist-kt\start\autofmt\.git*
-        xcopy ..\contrib\vimdoc-ja %DEST%\runtime\pack\dist-kt\start\vimdoc-ja /Y /E /V /I /R /Q || exit 1
+        robocopy ..\contrib\vimdoc-ja %DEST%\runtime\pack\dist-kt\start\vimdoc-ja /E /XA:H /NP /NFL /NDL
+        if ERRORLEVEL 8 exit 1
         del /Q %DEST%\runtime\pack\dist-kt\start\vimdoc-ja\.git*
-        xcopy ..\contrib\vim-mild  %DEST%\runtime\pack\dist-kt\start\vim-mild  /Y /E /V /I /R /Q || exit 1
+        robocopy ..\contrib\vim-mild  %DEST%\runtime\pack\dist-kt\start\vim-mild  /E /XA:H /NP /NFL /NDL
+        if ERRORLEVEL 8 exit 1
         rem del /Q %DEST%\runtime\pack\dist-kt\start\vim-mild\.git*
-        xcopy ..\vim\.hg\patches   %DEST%\patches   /Y /E /V /I /R /Q || exit 1
+        robocopy ..\vim\.hg\patches   %DEST%\patches   /E /NP /NFL /NDL
+        if ERRORLEVEL 8 exit 1
         rd /S /Q %DEST%\patches\.hg %DEST%\patches\scripts
         del /Q %DEST%\patches\.hg* %DEST%\patches\appveyor.yml
+
+        :: Create some links (7-zip doesn't store hardlinks as links, though.)
+        mklink /h %DEST%\gvimdiff.exe %DEST%\gvim.exe
+        mklink /h %DEST%\vimdiff.exe %DEST%\vim.exe
+
         rem md artifacts
         set BASENAME=vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}
         7z a -mx=9 artifacts\%BASENAME%.zip %DEST% || exit 1

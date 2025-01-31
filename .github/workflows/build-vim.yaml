@@ -454,6 +454,7 @@ jobs:
         call vim\src\msvc-latest ${{ matrix.vcarch }}
         cd vim
 
+        set PYTHONLEGACYWINDOWSSTDIO=1
         echo %COL_GREEN%Start testing vim in background.%COL_RESET%
         start cmd /c "cd src2\testdir & nmake -nologo -f Make_mvc.mak VIMPROG=..\..\src\vim test_terminal > nul & echo done>done.txt"
 

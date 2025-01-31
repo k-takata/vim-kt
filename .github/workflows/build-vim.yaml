@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - 'debug*'
   pull_request:
   schedule:
     - cron: '0 0 * * *'
@@ -136,6 +137,12 @@ jobs:
 #      shell: cmd
 #      run: |
 #        fsutil 8dot3name set D: 0
+
+    - name: Check env
+      shell: cmd
+      run: |
+        where.exe python
+        python --version
 
     - uses: actions/checkout@v4
       if: github.event_name != 'workflow_dispatch'

@@ -143,6 +143,9 @@ jobs:
       run: |
         where.exe python
         python --version
+        where.exe py
+        py -0
+        py --version
 
     - uses: actions/checkout@v4
       if: github.event_name != 'workflow_dispatch'
@@ -452,11 +455,16 @@ jobs:
         cd vim
 
         echo %COL_GREEN%Start testing vim in background.%COL_RESET%
-        start cmd /c "cd src2\testdir & nmake -nologo -f Make_mvc.mak VIMPROG=..\..\src\vim > nul & echo done>done.txt"
+        start cmd /c "cd src2\testdir & nmake -nologo -f Make_mvc.mak VIMPROG=..\..\src\vim test_terminal > nul & echo done>done.txt"
 
         echo %COL_GREEN%Test gvim:%COL_RESET%
         cd src\testdir
-        nmake -nologo -f Make_mvc.mak VIMPROG=..\gvim || exit 1
+        where.exe python
+        python --version
+        where.exe py
+        py -0
+        py --version
+        nmake -nologo -f Make_mvc.mak VIMPROG=..\gvim test_terminal || exit 1
         cd ..
 
     - name: Show the result of testing Vim

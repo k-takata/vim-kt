@@ -249,13 +249,14 @@ jobs:
         pacboy: libiconv:p gettext-runtime:p
 
 #    # See: https://github.com/nelsonjchen/reverse-rdp-windows-github-actions
+#    # To check the endpoint: ngrok dashboard > Universal Gateway > Endpoints
 #    - name: Enable RDP
 #      env:
 #        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
 #      run: |
-#        Invoke-WebRequest https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
+#        Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
 #        Expand-Archive ngrok.zip
-#        .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
+#        .\ngrok\ngrok.exe config add-authtoken $Env:NGROK_AUTH_TOKEN
 #        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
 #        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 #        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
@@ -434,6 +435,12 @@ jobs:
         .\vim --version || exit 1
         .\vim --not-a-term -u NONE -S ..\..\scripts\if_ver.vim -c quit
         type if_ver.txt
+
+#    - name: Wait for RDP
+#      if: steps.check.outputs.skip == 'no'
+#      shell: cmd
+#      run: |
+#        ping -n 3600 localhost>nul
 
     - name: Test and show the result of testing gVim
       if: steps.check.outputs.skip == 'no'

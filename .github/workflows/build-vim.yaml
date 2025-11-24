@@ -137,9 +137,9 @@ jobs:
 #      run: |
 #        fsutil 8dot3name set D: 0
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       if: github.event_name != 'workflow_dispatch'
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       if: github.event_name == 'workflow_dispatch'
       with:
         ref: ${{inputs.base_commit}}
@@ -550,9 +550,9 @@ jobs:
       contents: write # to create release
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       if: github.event_name != 'workflow_dispatch'
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       if: github.event_name == 'workflow_dispatch'
       with:
         ref: ${{inputs.base_commit}}

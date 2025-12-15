@@ -567,13 +567,13 @@ jobs:
         done
 
     - name: Download Artifact (win32)
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       with:
         name: vim-kt-win32
         path: vim-kt-win32
 
     - name: Download Artifact (win64)
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       with:
         name: vim-kt-win64
         path: vim-kt-win64

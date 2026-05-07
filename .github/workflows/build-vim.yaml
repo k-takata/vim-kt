@@ -612,7 +612,7 @@ jobs:
         git config --local user.email "$USER_EMAIL"
         git commit -a \
           -m "Update Vim to ${{ steps.changelog.outputs.tag }}" \
-          -m "$(cat vim-kt-win64/changelog.txt)"
+          -m "$(head -n 50 vim-kt-win64/changelog.txt)"
         git tag "${{ steps.changelog.outputs.tag }}"
         git push origin HEAD --tags
 

@@ -31,9 +31,11 @@ The following source codes and patches are used to build this package:
 The following interfaces are enabled:
 
 * [LuaBinaries](http://luabinaries.sourceforge.net/download.html) 5.4 (included)
-* [Strawberry Perl](https://strawberryperl.com/) 5.32
+* [Strawberry Perl](https://strawberryperl.com/)
+  - 32-bit: 5.32
+  - 64-bit: 5.42
 * [Python](https://www.python.org/downloads/) 3.8 or later
-* [RubyInstaller](https://rubyinstaller.org/downloads/) 3.3
+* [RubyInstaller](https://rubyinstaller.org/downloads/) 3.4
 
 Perl, Python and Ruby are not included in this package. If you want use them, install the official binaries from the above sites.
 
@@ -55,4 +57,4 @@ The following packages are also included:
 
 * gettext and iconv from MSYS2
 * [winpty](https://github.com/rprichard/winpty) 0.4.3
-* [libsodium](https://download.libsodium.org/libsodium/releases/) 1.0.18
+* [libsodium](https://download.libsodium.org/libsodium/releases/) 1.0.19

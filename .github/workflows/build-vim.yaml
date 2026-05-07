@@ -23,7 +23,7 @@ permissions:
 
 env:
   VIMREPO: https://github.com/vim/vim
-  MQREPO: http://hg.pf.osdn.net/view/k/k_/k_takata/vim-ktakata-mq
+  PATCHESREPO: https://github.com/k-takata/vim-kt-patches
   GETTEXT_PATH: D:\msys64\usr\bin
 
   # Account for committing
@@ -223,10 +223,10 @@ jobs:
       shell: bash
       run: |
         cd vim
-        patches=.hg/patches
-        hg clone $MQREPO $patches
+        patches=.git/patches
+        git clone ${PATCHESREPO}.git $patches
         # Apply patches
-        sed -e '/ #+/d' -e 's/ #-.*$//' $patches/series | \
+        sed -e '/ #+/d' -e 's/ #.*$//' $patches/series | \
           xargs -I{} --verbose git apply -C1 $patches/{}
 
     - name: Checkout submodules and update them
@@ -519,10 +519,10 @@ jobs:
         robocopy ..\contrib\vim-mild  %DEST%\runtime\pack\dist-kt\start\vim-mild  /E /XA:H /NP /NFL /NDL
         if ERRORLEVEL 8 exit 1
         rem del /Q %DEST%\runtime\pack\dist-kt\start\vim-mild\.git*
-        robocopy ..\vim\.hg\patches   %DEST%\patches   /E /NP /NFL /NDL
+        robocopy ..\vim\.git\patches   %DEST%\patches   /E /NP /NFL /NDL
         if ERRORLEVEL 8 exit 1
-        rd /S /Q %DEST%\patches\.hg %DEST%\patches\scripts
-        del /Q %DEST%\patches\.hg* %DEST%\patches\appveyor.yml
+        rd /S /Q %DEST%\patches\.git %DEST%\patches\scripts
+        del /Q %DEST%\patches\.git* %DEST%\patches\appveyor.yml
 
         :: Create some links (7-zip doesn't store hardlinks as links, though.)
         mklink /h %DEST%\gvimdiff.exe %DEST%\gvim.exe

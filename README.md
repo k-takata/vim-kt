@@ -24,7 +24,7 @@ This package has some differences from the official package.
 The following source codes and patches are used to build this package:
 
 * [The official Vim repository](https://github.com/vim/vim)
-* [vim-ktakata-mq](https://osdn.net/users/k_takata/pf/vim-ktakata-mq/wiki/FrontPage)
+* [vim-kt-patches](https://github.com/k-takata/vim-kt-patches)
 
 ## Interfaces
 

@@ -62,7 +62,9 @@ env:
 
   # Other dependencies
   # gettext
-  #GETTEXT_URL: https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.21-v1.16/gettext0.21-iconv1.16-shared-%BITS%.zip
+  GETTEXT_VER: '1.0'
+  ICONV_VER: '1.19'
+  GETTEXT_URL: https://github.com/mlocati/gettext-iconv-windows/releases/download/v%GETTEXT_VER%-v%ICONV_VER%/gettext%GETTEXT_VER%-iconv%ICONV_VER%-shared-%BITS%.zip
   GETTEXT_DIR: D:\gettext
   # winpty
   WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
@@ -277,7 +279,9 @@ jobs:
         echo %PERL_RELEASE%>> urls.txt
         echo %PYTHON3_RELEASE%>> urls.txt
         echo %RUBY_RELEASE%>> urls.txt
-        rem echo %GETTEXT_URL%>> urls.txt
+        if defined GETTEXT_URL (
+          echo %GETTEXT_URL%>> urls.txt
+        )
         echo %WINPTY_URL%>> urls.txt
         echo %SODIUM_RELEASE%>> urls.txt
 
@@ -325,14 +329,17 @@ jobs:
         7z x downloads\ruby_src.zip */bin */common.mk */enc/Makefile.in */include */spec/ruby/optional/capi/ext/*_spec.c */version.h */win32 -xr!README.* -xr!*/win32/*.c -xr!*/win32/*.h -o.. > nul || exit 1
         move ..\ruby-%RUBY_BRANCH% ..\ruby > nul || exit 1
 
-        rem echo %COL_GREEN%Download gettext%COL_RESET%
-        rem call :downloadfile %GETTEXT_URL% downloads\gettext.zip
-        rem 7z e -y downloads\gettext.zip -o%GETTEXT_DIR% > nul || exit 1
-        echo %COL_GREEN%Prepare gettext%COL_RESET%
-        md %GETTEXT_DIR%
-        copy /Y D:\msys64\${{ matrix.sys }}\bin\libiconv-2.dll %GETTEXT_DIR%
-        copy /Y D:\msys64\${{ matrix.sys }}\bin\libintl-8.dll %GETTEXT_DIR%
-        if "${{ matrix.sys }}"=="mingw32" copy /Y D:\msys64\${{ matrix.sys }}\bin\libgcc_s_dw2-1.dll %GETTEXT_DIR%
+        if defined GETTEXT_URL (
+          echo %COL_GREEN%Download gettext%COL_RESET%
+          call :downloadfile %GETTEXT_URL% downloads\gettext.zip
+          7z e -y downloads\gettext.zip -o%GETTEXT_DIR% > nul || exit 1
+        ) else (
+          echo %COL_GREEN%Prepare gettext%COL_RESET%
+          md %GETTEXT_DIR%
+          copy /Y D:\msys64\${{ matrix.sys }}\bin\libiconv-2.dll %GETTEXT_DIR%
+          copy /Y D:\msys64\${{ matrix.sys }}\bin\libintl-8.dll %GETTEXT_DIR%
+          if "${{ matrix.sys }}"=="mingw32" copy /Y D:\msys64\${{ matrix.sys }}\bin\libgcc_s_dw2-1.dll %GETTEXT_DIR%
+        )
 
         echo %COL_GREEN%Download winpty%COL_RESET%
         call :downloadfile %WINPTY_URL% downloads\winpty.zip
@@ -508,8 +515,11 @@ jobs:
         copy %LUA_DIR%\lua*.dll   %DEST% || exit 1
         copy %GETTEXT_DIR%\libiconv-2.dll %DEST% || exit 1
         copy %GETTEXT_DIR%\libintl-8.dll  %DEST% || exit 1
-        rem if exist %GETTEXT_DIR%\libgcc_s_sjlj-1.dll copy %GETTEXT_DIR%\libgcc_s_sjlj-1.dll %DEST% || exit 1
-        if exist %GETTEXT_DIR%\libgcc_s_dw2-1.dll copy %GETTEXT_DIR%\libgcc_s_dw2-1.dll %DEST% || exit 1
+        if defined GETTEXT_URL (
+          rem if exist %GETTEXT_DIR%\libgcc_s_sjlj-1.dll copy %GETTEXT_DIR%\libgcc_s_sjlj-1.dll %DEST% || exit 1
+        ) else (
+          if exist %GETTEXT_DIR%\libgcc_s_dw2-1.dll copy %GETTEXT_DIR%\libgcc_s_dw2-1.dll %DEST% || exit 1
+        )
         robocopy ..\vim\runtime %DEST%\runtime /E /NP /NFL /NDL
         if ERRORLEVEL 8 exit 1
         rd /S /Q %DEST%\runtime\syntax\testdir

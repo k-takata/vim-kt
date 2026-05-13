@@ -1,4 +1,4 @@
-[![build status](https://github.com/k-takata/vim-kt/workflows/Build%20Vim/badge.svg)](https://github.com/k-takata/vim-kt/actions)
+[![build status](https://github.com/k-takata/vim-kt/actions/workflows/build-vim.yaml/badge.svg)](https://github.com/k-takata/vim-kt/actions/workflows/build-vim.yaml)
 
 # vim-kt
 

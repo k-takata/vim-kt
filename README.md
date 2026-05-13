@@ -57,4 +57,4 @@ The following packages are also included:
 
 * [gettext-iconv-windows](https://github.com/mlocati/gettext-iconv-windows) gettext 1.0 + iconv 1.19 <!-- * gettext and iconv from MSYS2 -->
 * [winpty](https://github.com/rprichard/winpty) 0.4.3
-* [libsodium](https://download.libsodium.org/libsodium/releases/) 1.0.19
+* [libsodium](https://download.libsodium.org/libsodium/releases/) 1.0.22

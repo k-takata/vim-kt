@@ -573,6 +573,8 @@ jobs:
     steps:
     - uses: actions/checkout@v6
       if: github.event_name != 'workflow_dispatch'
+      with:
+        ssh-key: ${{ secrets.VIM_KT_DEPLOY_KEY }}
     - uses: actions/checkout@v6
       if: github.event_name == 'workflow_dispatch'
       with:

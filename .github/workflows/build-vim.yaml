@@ -19,6 +19,9 @@ on:
         type: string
 
 permissions:
+  id-token: write # needed for attestion
+  attestations: write
+  artifact-metadata: write
   contents: read
 
 env:
@@ -33,12 +36,16 @@ env:
   # Modified By
   MODIFIED_BY: "k-takata"
 
+  #
   # Interfaces
+  #
+
   # Lua
   LUA_VER_DOT: '5.4'
   LUA_RELEASE: 5.4.8
   LUA_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win%BITS%_dllw6_lib.zip
   LUA_DIR: D:\Lua
+
   # Perl
   PERL_VER_DOT_32: '5.32'
   PERL_RELEASE_32: 5.32.1.1
@@ -47,11 +54,13 @@ env:
   PERL_RELEASE_64: 5.42.2.1
   PERL_URL_64: https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/SP_%PERL_RELEASE_NODOT%_%BITS%bit/strawberry-perl-%PERL_RELEASE%-%BITS%bit-portable.zip
   PERL_DIR: D:\Strawberry\perl
+
   # Python 3
   PYTHON3_VER_DOT: '3.12'
   PYTHON3_RELEASE: 3.12.0
   PYTHON3_URL: https://www.python.org/ftp/python/%PYTHON3_RELEASE%/python-%PYTHON3_RELEASE%%PYARCH%.exe
   PYTHON3_DIR: D:\python3
+
   # Ruby
   RUBY_VER_DOT: '3.4'
   RUBY_API_VER_LONG: 3.4.0
@@ -60,19 +69,25 @@ env:
   RUBY_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-%RUBY_RELEASE%/rubyinstaller-%RUBY_RELEASE%-%ARCH%.7z
   RUBY_DIR: D:\rubyinstaller
 
+  #
   # Other dependencies
+  #
+
   # gettext
   GETTEXT_VER: '1.0'
   ICONV_VER: '1.19'
   GETTEXT_URL: https://github.com/mlocati/gettext-iconv-windows/releases/download/v%GETTEXT_VER%-v%ICONV_VER%/gettext%GETTEXT_VER%-iconv%ICONV_VER%-shared-%BITS%.zip
   GETTEXT_DIR: D:\gettext
+
   # winpty
   WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
+
   # libsodium
   SODIUM_RELEASE: '1.0.22'
   SODIUM_VC_VER: 'v143'
   SODIUM_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_RELEASE%-stable-msvc.zip
   SODIUM_DIR: D:\libsodium
+
 
   # Skip pattern
   # FIXME: Test_mswin_event_mouse is too flaky and fails too often.
@@ -98,16 +113,16 @@ jobs:
             warch: x64
             sodiumarch: x64
             bits: 64
-            cygreg: registry
-            pyreg: ""
+            #cygreg: registry
+            #pyreg: ""
             sys: mingw64
           - arch: x86
             vcarch: x86
             warch: ia32
             sodiumarch: Win32
             bits: 32
-            cygreg: registry32
-            pyreg: "-32"
+            #cygreg: registry32
+            #pyreg: "-32"
             sys: mingw32
 
     outputs:
@@ -160,6 +175,7 @@ jobs:
           if [ "${{ github.event_name }}" = 'pull_request' ]; then
             git clone ${VIMREPO}.git --depth=5
           else
+            gh run cancel "${{ github.run_id }}"
             exit 0
           fi
         fi
@@ -207,16 +223,19 @@ jobs:
       shell: bash
       run: |
         if git diff --exit-code HEAD vimver.txt; then
+          # No updates found.
           echo ${COL_YELLOW}No updates.${COL_RESET}
           if [ "${{ github.event_name }}" = 'pull_request' ]; then
             # Don't skip on pull_request even if there are no updates.
             echo "skip=no" >> $GITHUB_OUTPUT
             echo "skip_release=yes" >> $GITHUB_OUTPUT
           else
+            # No updates. Skip all.
             echo "skip=yes" >> $GITHUB_OUTPUT
             echo "skip_release=yes" >> $GITHUB_OUTPUT
           fi
         else
+          # Updates found
           if [ "${{ github.ref_name }}" = 'master' ] || [ "${{github.event_name}}" = 'workflow_dispatch' ]; then
             echo "skip=no" >> $GITHUB_OUTPUT
             echo "skip_release=no" >> $GITHUB_OUTPUT
@@ -250,11 +269,38 @@ jobs:
     - uses: msys2/setup-msys2@v2
       if: steps.check.outputs.skip == 'no'
       with:
-        update: true
+        update: false
         location: D:\
         msystem: ${{ matrix.sys }}
-        install: gettext
-        pacboy: libiconv:p gettext-runtime:p
+        #install: gettext
+        #pacboy: libiconv:p gettext-runtime:p
+
+    - name: Update msys2 (1st)
+      if: steps.check.outputs.skip == 'no'
+      shell: cmd
+      run: |
+        rem https://www.msys2.org/docs/updating/#potential-issues
+        rem pacman-key --refresh-keys
+        (
+          rem Reset sync databases in case of a corrupted cached state
+          echo rm -f /var/lib/pacman/sync/*.db /var/lib/pacman/sync/*.db.sig
+          echo pacman --noconfirm -Sy msys2-keyring
+          echo pacman --noconfirm -Suuy
+        ) > update-msys2.sh
+
+        cmd /c msys2 update-msys2.sh
+        del update-msys2.sh
+
+        rem Ignore error when updating the core packages. (All the msys2 processes are terminated.)
+        exit 0
+
+    - name: Update msys2 (2nd)
+      if: steps.check.outputs.skip == 'no'
+      shell: msys2 {0}
+      run: |
+        pacman --noconfirm -Suuy
+        pacman --noconfirm -S --needed gettext pactoys
+        pacboy --noconfirm -S libiconv:p gettext-runtime:p
 
 #    # See: https://github.com/nelsonjchen/reverse-rdp-windows-github-actions
 #    # To check the endpoint: ngrok dashboard > Universal Gateway > Endpoints
@@ -300,10 +346,10 @@ jobs:
         path C:\Program Files\7-Zip;%path%
         set BITS=${{ matrix.bits }}
         set ARCH=${{ matrix.arch }}
-        if ${{ matrix.arch }}==x64 (
-          set PYARCH=-amd64
-        ) else (
+        if ${{ matrix.vcarch }}==x86 (
           set PYARCH=
+        ) else (
+          set PYARCH=-${{ matrix.vcarch }}
         )
 
         echo %COL_GREEN%Download Lua%COL_RESET%
@@ -357,12 +403,9 @@ jobs:
 
         :downloadfile
         :: call :downloadfile <URL> <localfile>
+        echo Downloading: %1
         if not exist %2 (
-          curl -f -L %1 -o %2
-        )
-        if ERRORLEVEL 1 (
-          rem Retry once.
-          curl -f -L %1 -o %2 || exit 1
+          curl --fail -L --retry 2 --retry-delay 5 --retry-all-errors %1 -o %2 || exit 1
         )
         goto :eof
 
@@ -439,6 +482,7 @@ jobs:
         path %LUA_DIR%;%PERL_DIR%\bin;%PYTHON3_DIR%;%RUBY_DIR%\bin;%RUBY_DIR%\bin\ruby_builtin_dlls;%GETTEXT_DIR%;%path%
         cd vim\src
         echo.
+        rem start "" /wait .\gvim -silent -register
         echo %COL_GREEN%gvim version:%COL_RESET%
         start /wait .\gvim -u NONE -c "redir @a | ver | put a | 1,3d | wq!" ver.txt
         type ver.txt || exit 1
@@ -455,7 +499,7 @@ jobs:
 #      run: |
 #        ping -n 3600 localhost>nul
 
-    - name: Test and show the result of testing gVim
+    - name: Test gvim/vim and show the result of gvim tests
       if: steps.check.outputs.skip == 'no'
       shell: cmd
       timeout-minutes: 15
@@ -472,7 +516,7 @@ jobs:
         nmake -nologo -f Make_mvc.mak VIMPROG=..\gvim || exit 1
         cd ..
 
-    - name: Show the result of testing Vim
+    - name: Show the result of vim tests
       if: steps.check.outputs.skip == 'no'
       shell: cmd
       timeout-minutes: 10
@@ -562,6 +606,12 @@ jobs:
         name: vim-kt-win${{ matrix.bits }}
         path: ./package/artifacts
 
+    - name: Attest
+      if: steps.check.outputs.skip == 'no'
+      uses: actions/attest@v4
+      with:
+        subject-path: ./package/artifacts
+
   release:
     runs-on: ubuntu-latest
     needs: [build]
@@ -589,21 +639,16 @@ jobs:
           git -C $i checkout master
         done
 
-    - name: Download Artifact (win32)
+    - name: Download all artifacts
       uses: actions/download-artifact@v8
-      with:
-        name: vim-kt-win32
-        path: vim-kt-win32
-
-    - name: Download Artifact (win64)
-      uses: actions/download-artifact@v8
-      with:
-        name: vim-kt-win64
-        path: vim-kt-win64
 
     - name: Get changelog
       id: changelog
       run: |
+        latesttag=$(cat vim-kt-win64/latesttag.txt)
+        echo "tag=${latesttag}" >> $GITHUB_OUTPUT
+        cp vim-kt-win64/latesttag.txt vimver.txt
+
         cat << EOF > changelog.md
         ### Changes:
 
@@ -618,9 +663,6 @@ jobs:
         * [Python](https://www.python.org/downloads/) ${{ env.PYTHON3_VER_DOT }}
         * [RubyInstaller](https://rubyinstaller.org/downloads/) ${{ env.RUBY_VER_DOT }}
         EOF
-        latesttag=$(cat vim-kt-win64/latesttag.txt)
-        echo "tag=${latesttag}" >> $GITHUB_OUTPUT
-        cp vim-kt-win64/latesttag.txt vimver.txt
 
     - name: Commit and push
       id: commit

@@ -19,6 +19,7 @@ on:
         type: string
 
 permissions:
+  actions: write # to cancel a workflow run
   id-token: write # needed for attestion
   attestations: write
   artifact-metadata: write

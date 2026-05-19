@@ -169,6 +169,8 @@ jobs:
 
     - name: Checkout Vim
       shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
       run: |
         if ! git clone ${VIMREPO}.git --shallow-exclude="$(cat vimver.txt)"; then
           # No new commits since the version written in vimver.txt.

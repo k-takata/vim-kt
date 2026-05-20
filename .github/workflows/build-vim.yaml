@@ -23,9 +23,6 @@ on:
 
 permissions:
   actions: write # to cancel a workflow run
-  id-token: write # needed for attestation
-  attestations: write
-  artifact-metadata: write
   contents: read
 
 env:
@@ -599,6 +596,9 @@ jobs:
     if: needs.build.outputs.skip_release == 'no'
 
     permissions:
+      id-token: write # needed for attestation
+      attestations: write
+      artifact-metadata: write
       contents: write # to create release
 
     steps:

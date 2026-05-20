@@ -676,6 +676,7 @@ jobs:
         body_path: changelog.md
         draft: false
         prerelease: false
+        token: ${{ secrets.VIM_KT_DEPLOY_KEY }}
         files: |
           ./vim-kt-win32/vim-kt-*-*-win32.zip
           ./vim-kt-win32/vim-kt-*-*-win32.7z

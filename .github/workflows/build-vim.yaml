@@ -23,7 +23,7 @@ on:
 
 permissions:
   actions: write # to cancel a workflow run
-  id-token: write # needed for attestion
+  id-token: write # needed for attestation
   attestations: write
   artifact-metadata: write
   contents: read
@@ -133,7 +133,7 @@ jobs:
       skip_release: ${{ steps.check.outputs.skip_release }}
 
     steps:
-    - name: Initalize
+    - name: Initialize
       id: init
       shell: bash
       run: |
@@ -613,7 +613,7 @@ jobs:
 
     - name: Checkout and update submodules
       run: |
-        # Checkout the lastest version, ignore error
+        # Checkout the latest version, ignore error
         git submodule update --init --depth 1 || true
         for i in contrib/*/; do
           git -C $i checkout master

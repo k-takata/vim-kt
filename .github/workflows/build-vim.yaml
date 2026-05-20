@@ -320,16 +320,17 @@ jobs:
     - name: Create a list of download URLs
       shell: cmd
       run: |
-        type NUL > urls.txt
-        echo %LUA_RELEASE%>> urls.txt
-        echo %PERL_RELEASE%>> urls.txt
-        echo %PYTHON3_RELEASE%>> urls.txt
-        echo %RUBY_RELEASE%>> urls.txt
-        if defined GETTEXT_URL (
-          echo %GETTEXT_URL%>> urls.txt
-        )
-        echo %WINPTY_URL%>> urls.txt
-        echo %SODIUM_RELEASE%>> urls.txt
+        (
+          echo %LUA_RELEASE%
+          echo %PERL_RELEASE%
+          echo %PYTHON3_RELEASE%
+          echo %RUBY_RELEASE%
+          if defined GETTEXT_URL (
+            echo %GETTEXT_URL%
+          )
+          echo %WINPTY_URL%
+          echo %SODIUM_RELEASE%
+        ) > urls.txt
 
     - name: Cache downloaded files
       uses: actions/cache@v5

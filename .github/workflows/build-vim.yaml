@@ -44,29 +44,29 @@ env:
 
   # Lua
   LUA_VER_DOT: '5.4'
-  LUA_RELEASE: 5.4.8
+  LUA_RELEASE: '5.4.8'
   LUA_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win%BITS%_dllw6_lib.zip
   LUA_DIR: D:\Lua
 
   # Perl
   PERL_VER_DOT_32: '5.32'
-  PERL_RELEASE_32: 5.32.1.1
+  PERL_RELEASE_32: '5.32.1.1'
   PERL_URL_32: https://strawberryperl.com/download/%PERL_RELEASE%/strawberry-perl-%PERL_RELEASE%-%BITS%bit-portable.zip
   PERL_VER_DOT_64: '5.42'
-  PERL_RELEASE_64: 5.42.2.1
+  PERL_RELEASE_64: '5.42.2.1'
   PERL_URL_64: https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/SP_%PERL_RELEASE_NODOT%_%BITS%bit/strawberry-perl-%PERL_RELEASE%-%BITS%bit-portable.zip
   PERL_DIR: D:\Strawberry\perl
 
   # Python 3
   PYTHON3_VER_DOT: '3.12'
-  PYTHON3_RELEASE: 3.12.0
+  PYTHON3_RELEASE: '3.12.10'
   PYTHON3_URL: https://www.python.org/ftp/python/%PYTHON3_RELEASE%/python-%PYTHON3_RELEASE%%PYARCH%.exe
   PYTHON3_DIR: D:\python3
 
   # Ruby
   RUBY_VER_DOT: '3.4'
-  RUBY_API_VER_LONG: 3.4.0
-  RUBY_RELEASE: 3.4.9-1
+  RUBY_API_VER_LONG: '3.4.0'
+  RUBY_RELEASE: '3.4.9-1'
   RUBY_SRC_URL: https://github.com/ruby/ruby/archive/%RUBY_BRANCH%.zip
   RUBY_URL: https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-%RUBY_RELEASE%/rubyinstaller-%RUBY_RELEASE%-%ARCH%.7z
   RUBY_DIR: D:\rubyinstaller
@@ -102,8 +102,139 @@ env:
   COL_RESET: "\x1b[m"
 
 jobs:
+  check-updates:
+    runs-on: ubuntu-slim
+
+    outputs:
+      continue: ${{ steps.check.outputs.continue }}
+      create-release: ${{ steps.check.outputs.create-release }}
+
+    steps:
+    - uses: actions/checkout@v6
+      if: github.event_name != 'workflow_dispatch'
+    - uses: actions/checkout@v6
+      if: github.event_name == 'workflow_dispatch'
+      with:
+        ref: ${{inputs.base_commit}}
+
+    - name: Checkout Vim
+      shell: bash
+      run: |
+        if ! git clone ${VIMREPO}.git --shallow-exclude="$(cat vimver.txt)"; then
+          # No new commits since the version written in vimver.txt.
+          if [ "${{ github.event_name }}" = 'pull_request' ]; then
+            git clone ${VIMREPO}.git --depth=5
+          else
+            exit 0
+          fi
+        fi
+        if [ "${{github.event_name}}" = 'workflow_dispatch' ]; then
+          git -C vim checkout "${{inputs.tag}}"
+        fi
+        git -C vim log -4 --color=always
+
+    - name: Get changelog
+      id: changelog
+      shell: bash
+      run: |
+        mkdir package/artifacts
+        if [ ! -d vim ]; then
+          # No new commits.
+          exit 0
+        fi
+
+        cd vim
+        git rev-parse HEAD > ../package/artifacts/latestrev.txt
+        if [ "$(git tag)" = "" ]; then
+          # No new tags.
+          cp ../vimver.txt ../package/artifacts/latesttag.txt
+          exit 0
+        fi
+
+        latesttag=$(git describe --tags --abbrev=0)
+        echo $latesttag > ../package/artifacts/latesttag.txt
+        echo $latesttag > ../vimver.txt
+        oldrev=$(cat ../vimrev.txt)
+        if git log --format='format:' $oldrev > /dev/null 2>&1; then
+          logopt=$oldrev..HEAD
+        else
+          logopt=--
+        fi
+        commiturl=${VIMREPO}/commit/
+        echo "ChangeLog in Markdown:"
+        git log --format='format:%H %s' $logopt | \
+          sed -e 's/[][_*^<`\\]/\\&/g' \
+              -e "s#^\([0-9a-f]*\) patch \([0-9.a-z]*\)#* [\2]($commiturl\1)#" \
+              -e "s#^\([0-9a-f]*\) \(.*\)#* [\2]($commiturl\1)#" | \
+          tee ../package/artifacts/changelog.md
+        echo
+        echo "ChangeLog in text:"
+        git log --format='format:* %s' $logopt | \
+          sed -e 's/^\* patch /* /g' | \
+          tee ../package/artifacts/changelog.txt
+
+    - name: Check changes
+      id: check
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        if git diff --exit-code HEAD vimver.txt; then
+          # No updates found.
+          echo ${COL_YELLOW}No updates.${COL_RESET}
+          if [ "${{ github.event_name }}" = 'pull_request' ]; then
+            # Don't skip on pull_request even if there are no updates.
+            echo "continue=yes" >> $GITHUB_OUTPUT
+            echo "create-release=no" >> $GITHUB_OUTPUT
+          else
+            # No updates. Cancel the workflow.
+            echo "continue=no" >> $GITHUB_OUTPUT
+            echo "create-release=no" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+        else
+          # Updates found
+          if [ "${{ github.ref_name }}" = 'master' ] || [ "${{github.event_name}}" = 'workflow_dispatch' ]; then
+            echo "continue=yes" >> $GITHUB_OUTPUT
+            echo "create-release=yes" >> $GITHUB_OUTPUT
+          else
+            echo "continue=yes" >> $GITHUB_OUTPUT
+            echo "create-release=no" >> $GITHUB_OUTPUT
+          fi
+        fi
+
+    - name: Checkout patches
+      if: steps.check.outputs.continue == 'yes'
+      shell: bash
+      run: |
+        cd vim
+        patches=.git/patches
+        git clone ${PATCHESREPO}.git $patches
+        git -C $patches rev-parse HEAD > ../package/artifacts/patchrev.txt
+
+    - name: Checkout submodules and update them
+      if: steps.check.outputs.continue == 'yes'
+      shell: bash
+      run: |
+        # Checkout the lastest version, ignore error
+        git submodule update --init --depth 1 || true
+        for i in contrib/*/; do
+          git -C $i checkout master
+        done
+
+        git diff -- contrib > ./package/artifacts/submodules.diff
+
+    - name: Upload repository information
+      uses: actions/upload-artifact@v7
+      with:
+        name: repo-info
+        path: ./package/artifacts
+
+
   build:
+    needs: [check-updates]
     runs-on: windows-latest
+    if: needs.check-updates.outputs.continue == 'yes'
 
     strategy:
       fail-fast: false
@@ -169,84 +300,22 @@ jobs:
       with:
         ref: ${{inputs.base_commit}}
 
+    - name: Download repository information
+      uses: actions/download-artifact@v8
+      with:
+        name: repo-info
+        path: repo-info
+
     - name: Checkout Vim
       shell: bash
-      env:
-        GH_TOKEN: ${{ github.token }}
       run: |
         if ! git clone ${VIMREPO}.git --shallow-exclude="$(cat vimver.txt)"; then
           # No new commits since the version written in vimver.txt.
           if [ "${{ github.event_name }}" = 'pull_request' ]; then
             git clone ${VIMREPO}.git --depth=5
-          else
-            gh run cancel "${{ github.run_id }}"
-            exit 0
           fi
         fi
-        if [ "${{github.event_name}}" = 'workflow_dispatch' ]; then
-          git -C vim checkout "${{inputs.tag}}"
-        fi
-        git -C vim log -4 --color=always
-
-    - name: Get changelog
-      id: changelog
-      shell: bash
-      run: |
-        mkdir package/artifacts
-        if [ ! -d vim ] || [ "$(git -C vim tag)" = "" ]; then
-          exit 0
-        fi
-
-        cd vim
-        latesttag=$(git describe --tags --abbrev=0)
-        echo "ref=${latesttag:1}" >> $GITHUB_OUTPUT
-        echo $latesttag > ../package/artifacts/latesttag.txt
-        echo $latesttag > ../vimver.txt
-        git rev-parse HEAD > ../package/artifacts/latestrev.txt
-        oldrev=$(cat ../vimrev.txt)
-        if git log --format='format:' $oldrev > /dev/null 2>&1; then
-          logopt=$oldrev..HEAD
-        else
-          logopt=--
-        fi
-        commiturl=${VIMREPO}/commit/
-        echo "ChangeLog in Markdown:"
-        git log --format='format:%H %s' $logopt | \
-          sed -e 's/[][_*^<`\\]/\\&/g' \
-              -e "s#^\([0-9a-f]*\) patch \([0-9.a-z]*\)#* [\2]($commiturl\1)#" \
-              -e "s#^\([0-9a-f]*\) \(.*\)#* [\2]($commiturl\1)#" | \
-          tee ../package/artifacts/changelog.md
-        echo
-        echo "ChangeLog in text:"
-        git log --format='format:* %s' $logopt | \
-          sed -e 's/^\* patch /* /g' | \
-          tee ../package/artifacts/changelog.txt
-
-    - name: Check changes
-      id: check
-      shell: bash
-      env:
-        GH_TOKEN: ${{ github.token }}
-      run: |
-        if git diff --exit-code HEAD vimver.txt; then
-          # No updates found.
-          echo ${COL_YELLOW}No updates.${COL_RESET}
-          if [ "${{ github.event_name }}" = 'pull_request' ]; then
-            # Don't skip on pull_request even if there are no updates.
-            echo "skip_release=yes" >> $GITHUB_OUTPUT
-          else
-            # No updates. Cancel the workflow.
-            gh run cancel "${{ github.run_id }}"
-            exit 0
-          fi
-        else
-          # Updates found
-          if [ "${{ github.ref_name }}" = 'master' ] || [ "${{github.event_name}}" = 'workflow_dispatch' ]; then
-            echo "skip_release=no" >> $GITHUB_OUTPUT
-          else
-            echo "skip_release=yes" >> $GITHUB_OUTPUT
-          fi
-        fi
+        git -C vim checkout "$(cat repo-info/latestrev.txt)"
 
     - name: Checkout patches and apply them
       shell: bash
@@ -254,6 +323,7 @@ jobs:
         cd vim
         patches=.git/patches
         git clone ${PATCHESREPO}.git $patches
+        git -C $patches checkout "$(cat ../repo-info/patchrev.txt)"
         # Apply patches
         sed -e '/ #+/d' -e 's/ #.*$//' $patches/series | \
           xargs -I{} --verbose git apply -C1 $patches/{}
@@ -261,11 +331,9 @@ jobs:
     - name: Checkout submodules and update them
       shell: bash
       run: |
-        # Checkout the lastest version, ignore error
         git submodule update --init --depth 1 || true
-        for i in contrib/*/; do
-          git -C $i checkout master
-        done
+        git apply --cached --allow-empty repo-info/submodules.diff
+        git submodule update
 
     - uses: msys2/setup-msys2@v2
       with:
@@ -432,11 +500,23 @@ jobs:
           > ja.euc-jp.po
 
     - name: Update patchlevel
+      id: patchlevel
       shell: bash
       run: |
         cd vim/src
         patchlevel=$(sed -n -e '/included_patches/{n;n;n;s/ *\([0-9]*\).*/\1/p;q}' version.c)
         sed -i -e "s/^\(# define VIM_VERSION_PATCHLEVEL\s\+\).*/\1$patchlevel/" version.h
+
+        # Set MAJOR, MINOR, PATCHLEVEL, PATCHLEVEL_PADDED
+        major=$(grep -o -P '#define VIM_VERSION_MAJOR\s+\K[0-9]+' version.h)
+        minor=$(grep -o -P '#define VIM_VERSION_MINOR\s+\K[0-9]+' version.h)
+        echo "MAJOR=${major}" >> $GITHUB_ENV
+        echo "MINOR=${minor}" >> $GITHUB_ENV
+        echo "PATCHLEVEL=${patchlevel}" >> $GITHUB_ENV
+        patchlevel_padded=$(printf '%04d' ${patchlevel})
+        echo "PATCHLEVEL_PADDED=${patchlevel_padded}" >> $GITHUB_ENV
+
+        echo "ver=${major}.${minor}.${patchlevel_padded}" >> $GITHUB_OUTPUT
 
     - name: Copy src directory to src2
       shell: cmd
@@ -580,7 +660,7 @@ jobs:
         mklink /h %DEST%\vimdiff.exe %DEST%\vim.exe
 
         rem md artifacts
-        set BASENAME=vim-kt-${{ steps.changelog.outputs.ref }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}
+        set BASENAME=vim-kt-${{ steps.patchlevel.outputs.ver }}-${{ steps.init.outputs.date }}-win${{ matrix.bits }}
         7z a -mx=9 artifacts\%BASENAME%.zip %DEST% || exit 1
         7z a -mx=9 artifacts\%BASENAME%.7z  %DEST% || exit 1
         7z a -mx=9 artifacts\%BASENAME%-pdb.7z *.pdb || exit 1
@@ -591,10 +671,11 @@ jobs:
         name: vim-kt-win${{ matrix.bits }}
         path: ./package/artifacts
 
+
   release:
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: needs.build.outputs.skip_release == 'no'
+    runs-on: ubuntu-slim
+    needs: [check-updates, build]
+    if: needs.check-updates.outputs.create-release == 'yes'
 
     permissions:
       id-token: write # needed for attestation
@@ -622,16 +703,14 @@ jobs:
         ssh-key: ${{ secrets.VIM_KT_DEPLOY_KEY }}
         #token: ${{ steps.app-token.outputs.token }}
 
-    - name: Checkout and update submodules
-      run: |
-        # Checkout the latest version, ignore error
-        git submodule update --init --depth 1 || true
-        for i in contrib/*/; do
-          git -C $i checkout master
-        done
-
     - name: Download all artifacts
       uses: actions/download-artifact@v8
+
+    - name: Checkout and update submodules
+      run: |
+        git submodule update --init --depth 1 || true
+        git apply --cached --allow-empty repo-info/submodules.diff
+        git submodule update
 
     - name: Attest
       uses: actions/attest@v4
@@ -641,14 +720,14 @@ jobs:
     - name: Get changelog
       id: changelog
       run: |
-        latesttag=$(cat vim-kt-win64/latesttag.txt)
+        latesttag=$(cat repo-info/latesttag.txt)
         echo "tag=${latesttag}" >> $GITHUB_OUTPUT
-        cp vim-kt-win64/latesttag.txt vimver.txt
+        cp repo-info/latesttag.txt vimver.txt
 
         cat << EOF > release_notes.md
         ### Changes:
 
-        $(cat vim-kt-win64/changelog.md)
+        $(cat repo-info/changelog.md)
 
         ### Compiled with:
 
@@ -670,12 +749,12 @@ jobs:
           echo ${COL_YELLOW}No updates.${COL_RESET}
           exit 1  # This should not happen.
         fi
-        cp vim-kt-win64/latestrev.txt vimrev.txt
+        cp repo-info/latestrev.txt vimrev.txt
         git config --local user.name "$USER_NAME"
         git config --local user.email "$USER_EMAIL"
         git commit -a \
           -m "Update Vim to ${{ steps.changelog.outputs.tag }}" \
-          -m "$(head -n 50 vim-kt-win64/changelog.txt)"
+          -m "$(head -n 50 repo-info/changelog.txt)"
         git tag "${{ steps.changelog.outputs.tag }}"
         git push origin HEAD --tags
 

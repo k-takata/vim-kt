@@ -602,24 +602,24 @@ jobs:
       contents: write # to create release
 
     steps:
-    - name: Generate token
-      id: app-token
-      uses: actions/create-github-app-token@v3
-      with:
-        client-id: ${{ secrets.VIM_KT_RELEASE_BOT_CLIENT_ID }}
-        private-key: ${{ secrets.VIM_KT_RELEASE_BOT_PRIVATE_KEY }}
+    #- name: Generate token
+    #  id: app-token
+    #  uses: actions/create-github-app-token@v3
+    #  with:
+    #    client-id: ${{ secrets.VIM_KT_RELEASE_BOT_CLIENT_ID }}
+    #    private-key: ${{ secrets.VIM_KT_RELEASE_BOT_PRIVATE_KEY }}
 
     - uses: actions/checkout@v6
       if: github.event_name != 'workflow_dispatch'
       with:
-        #ssh-key: ${{ secrets.VIM_KT_DEPLOY_KEY }}
-        token: ${{ steps.app-token.outputs.token }}
+        ssh-key: ${{ secrets.VIM_KT_DEPLOY_KEY }}
+        #token: ${{ steps.app-token.outputs.token }}
     - uses: actions/checkout@v6
       if: github.event_name == 'workflow_dispatch'
       with:
         ref: ${{inputs.base_commit}}
-        #ssh-key: ${{ secrets.VIM_KT_DEPLOY_KEY }}
-        token: ${{ steps.app-token.outputs.token }}
+        ssh-key: ${{ secrets.VIM_KT_DEPLOY_KEY }}
+        #token: ${{ steps.app-token.outputs.token }}
 
     - name: Checkout and update submodules
       run: |
@@ -686,7 +686,7 @@ jobs:
         body_path: changelog.md
         draft: false
         prerelease: false
-        token: ${{ steps.app-token.outputs.token }}
+        #token: ${{ steps.app-token.outputs.token }}
         files: |
           ./vim-kt-win32/vim-kt-*-*-win32.zip
           ./vim-kt-win32/vim-kt-*-*-win32.7z

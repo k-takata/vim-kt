@@ -644,7 +644,7 @@ jobs:
         echo "tag=${latesttag}" >> $GITHUB_OUTPUT
         cp vim-kt-win64/latesttag.txt vimver.txt
 
-        cat << EOF > changelog.md
+        cat << EOF > release_notes.md
         ### Changes:
 
         $(cat vim-kt-win64/changelog.md)
@@ -683,7 +683,7 @@ jobs:
       with:
         tag_name: ${{ steps.changelog.outputs.tag }}
         name: ${{ steps.changelog.outputs.tag }}
-        body_path: changelog.md
+        body_path: release_notes.md
         draft: false
         prerelease: false
         #token: ${{ steps.app-token.outputs.token }}

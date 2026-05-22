@@ -93,7 +93,7 @@ env:
 
   # Skip pattern
   # FIXME: Some tests are flaky and often fail.
-  TEST_SKIP_PAT: 'Test_mswin_event_mouse\|Test_channel_dap_mode\|Test_system_list_arg'
+  TEST_SKIP_PAT: 'Test_mswin_event_mouse'
 
   # Escape sequences
   COL_RED: "\x1b[31m"
@@ -428,6 +428,7 @@ jobs:
         echo %COL_GREEN%Download Python3%COL_RESET%
         call :downloadfile %PYTHON3_URL% downloads\python3.exe
         start /wait downloads\python3.exe /quiet TargetDir=%PYTHON3_DIR% Include_pip=0 Include_tcltk=0 Include_test=0 Include_tools=0 AssociateFiles=0 Shortcuts=0 Include_doc=0 Include_launcher=0 InstallLauncherAllUsers=0
+        copy /Y %PYTHON3_DIR%\python.exe %PYTHON3_DIR%\python3.exe
 
         echo %COL_GREEN%Download Ruby%COL_RESET%
         call :downloadfile %RUBY_URL% downloads\ruby.7z

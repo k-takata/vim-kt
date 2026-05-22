@@ -93,7 +93,7 @@ env:
 
   # Skip pattern
   # FIXME: Some tests are flaky and often fail.
-  TEST_SKIP_PAT: 'Test_mswin_event_mouse\|Test_channel_dap_mode\Test_system_list_arg'
+  TEST_SKIP_PAT: 'Test_mswin_event_mouse\|Test_channel_dap_mode\|Test_system_list_arg'
 
   # Escape sequences
   COL_RED: "\x1b[31m"

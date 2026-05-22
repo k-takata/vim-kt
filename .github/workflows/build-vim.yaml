@@ -93,7 +93,7 @@ env:
 
   # Skip pattern
   # FIXME: Some tests are flaky and often fail.
-  TEST_SKIP_PAT: 'Test_mswin_event_mouse\|Test_channel_dap_mode\|Test_system_list_arg'
+  TEST_SKIP_PAT: 'Test_mswin_event_mouse'
 
   # Escape sequences
   COL_RED: "\x1b[31m"
@@ -343,6 +343,14 @@ jobs:
         #install: gettext
         #pacboy: libiconv:p gettext-runtime:p
 
+    - name: Check python
+      shell: cmd
+      run: |
+        where.exe python.exe
+        where.exe python3.exe
+        where.exe py.exe
+        exit 0
+
     - name: Update msys2 (1st)
       shell: cmd
       run: |
@@ -550,6 +558,19 @@ jobs:
       shell: cmd
       run: |
         path %LUA_DIR%;%PERL_DIR%\bin;%PYTHON3_DIR%;%RUBY_DIR%\bin;%RUBY_DIR%\bin\ruby_builtin_dlls;%GETTEXT_DIR%;%path%
+        echo python.exe version
+        where python.exe
+        python.exe --version
+        echo.
+        echo python3.exe version
+        where python3.exe
+        python3.exe --version
+        echo.
+        echo py.exe version
+        where py.exe
+        py.exe --version
+        dir C:\hostedtoolcache\windows\Python\3.12.10\x64\
+
         cd vim\src
         echo.
         rem start "" /wait .\gvim -silent -register

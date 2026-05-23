@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag name (in vim repo) to run'
+        description: 'Tag name (in vim repo) to create a release'
         required: true
         type: string
       base_commit:
@@ -29,7 +29,8 @@ permissions:
 env:
   VIMREPO: https://github.com/vim/vim
   PATCHESREPO: https://github.com/k-takata/vim-kt-patches
-  GETTEXT_PATH: D:\msys64\usr\bin
+  DEPENDENCIES: 'D:\'
+  GETTEXT_PATH: 'D:\msys64\usr\bin'
 
   # Account for committing
   USER_NAME: "vim-kt CI"
@@ -93,7 +94,7 @@ env:
 
   # Skip pattern
   # FIXME: Some tests are flaky and often fail.
-  TEST_SKIP_PAT: 'Test_mswin_event_mouse'
+  TEST_SKIP_PAT: ''
 
   # Escape sequences
   COL_RED: "\x1b[31m"
@@ -208,7 +209,7 @@ jobs:
       shell: bash
       run: |
         cd vim
-        patches=.git/patches
+        patches=.git/stq-patches
         git clone ${PATCHESREPO}.git $patches
         git -C $patches rev-parse HEAD > ../package/artifacts/patchrev.txt
 
@@ -257,9 +258,6 @@ jobs:
             #cygreg: registry32
             #pyreg: "-32"
             sys: mingw32
-
-    outputs:
-      skip_release: ${{ steps.check.outputs.skip_release }}
 
     steps:
     - name: Initialize
@@ -321,7 +319,7 @@ jobs:
       shell: bash
       run: |
         cd vim
-        patches=.git/patches
+        patches=.git/stq-patches
         git clone ${PATCHESREPO}.git $patches
         git -C $patches checkout "$(cat ../repo-info/patchrev.txt)"
         # Apply patches
@@ -338,7 +336,7 @@ jobs:
     - uses: msys2/setup-msys2@v2
       with:
         update: false
-        location: D:\
+        location: ${{ env.DEPENDENCIES }}
         msystem: ${{ matrix.sys }}
         #install: gettext
         #pacboy: libiconv:p gettext-runtime:p
@@ -432,8 +430,8 @@ jobs:
 
         echo %COL_GREEN%Download Ruby%COL_RESET%
         call :downloadfile %RUBY_URL% downloads\ruby.7z
-        7z x downloads\ruby.7z -oD:\ > nul || exit 1
-        move D:\rubyinstaller-%RUBY_RELEASE%-${{ matrix.arch }} %RUBY_DIR% > nul || exit 1
+        7z x downloads\ruby.7z -o%RUBY_DIR%\.. > nul || exit 1
+        move %RUBY_DIR%\..\rubyinstaller-%RUBY_RELEASE%-${{ matrix.arch }} %RUBY_DIR% > nul || exit 1
 
         echo %COL_GREEN%Download Ruby source%COL_RESET%
         call :downloadfile %RUBY_SRC_URL% downloads\ruby_src.zip
@@ -448,21 +446,21 @@ jobs:
         ) else (
           echo %COL_GREEN%Prepare gettext%COL_RESET%
           md %GETTEXT_DIR%
-          copy /Y D:\msys64\${{ matrix.sys }}\bin\libiconv-2.dll %GETTEXT_DIR%
-          copy /Y D:\msys64\${{ matrix.sys }}\bin\libintl-8.dll %GETTEXT_DIR%
-          if "${{ matrix.sys }}"=="mingw32" copy /Y D:\msys64\${{ matrix.sys }}\bin\libgcc_s_dw2-1.dll %GETTEXT_DIR%
+          copy /Y %DEPENDENCIES%\msys64\${{ matrix.sys }}\bin\libiconv-2.dll %GETTEXT_DIR% || exit 1
+          copy /Y %DEPENDENCIES%\msys64\${{ matrix.sys }}\bin\libintl-8.dll %GETTEXT_DIR% || exit 1
+          if "${{ matrix.sys }}"=="mingw32" copy /Y %DEPENDENCIES%msys64\${{ matrix.sys }}\bin\libgcc_s_dw2-1.dll %GETTEXT_DIR% || exit 1
         )
 
         echo %COL_GREEN%Download winpty%COL_RESET%
         call :downloadfile %WINPTY_URL% downloads\winpty.zip
-        7z x -y downloads\winpty.zip -oD:\winpty > nul || exit 1
-        copy /Y D:\winpty\${{ matrix.warch }}\bin\winpty.dll        vim\src\winpty${{ matrix.bits }}.dll
-        copy /Y D:\winpty\${{ matrix.warch }}\bin\winpty-agent.exe  vim\src\
+        7z x -y downloads\winpty.zip -o%DEPENDENCIES%\winpty > nul || exit 1
+        copy /Y %DEPENDENCIES%\winpty\${{ matrix.warch }}\bin\winpty.dll        vim\src\winpty${{ matrix.bits }}.dll
+        copy /Y %DEPENDENCIES%\winpty\${{ matrix.warch }}\bin\winpty-agent.exe  vim\src\
 
         echo %COL_GREEN%Download libsodium%COL_RESET%
         call :downloadfile %SODIUM_URL% downloads\libsodium.zip
-        7z x -y downloads\libsodium.zip -oD:\ > nul || exit 1
-        copy /Y D:\libsodium\${{ matrix.sodiumarch }}\Release\%SODIUM_VC_VER%\dynamic\libsodium.dll  vim\src\
+        7z x -y downloads\libsodium.zip -o%SODIUM_DIR%\.. > nul || exit 1
+        copy /Y %SODIUM_DIR%\${{ matrix.sodiumarch }}\Release\%SODIUM_VC_VER%\dynamic\libsodium.dll  vim\src\
 
         goto :eof
 
@@ -552,8 +550,8 @@ jobs:
       run: |
         path %LUA_DIR%;%PERL_DIR%\bin;%PYTHON3_DIR%;%RUBY_DIR%\bin;%RUBY_DIR%\bin\ruby_builtin_dlls;%GETTEXT_DIR%;%path%
         cd vim\src
-        echo.
         rem start "" /wait .\gvim -silent -register
+        echo.
         echo %COL_GREEN%gvim version:%COL_RESET%
         start /wait .\gvim -u NONE -c "redir @a | ver | put a | 1,3d | wq!" ver.txt
         type ver.txt || exit 1
@@ -651,7 +649,7 @@ jobs:
         robocopy ..\contrib\vim-mild  %DEST%\runtime\pack\dist-kt\start\vim-mild  /E /XA:H /NP /NFL /NDL
         if ERRORLEVEL 8 exit 1
         rem del /Q %DEST%\runtime\pack\dist-kt\start\vim-mild\.git*
-        robocopy ..\vim\.git\patches   %DEST%\patches   /E /NP /NFL /NDL
+        robocopy ..\vim\.git\stq-patches   %DEST%\patches   /E /NP /NFL /NDL
         if ERRORLEVEL 8 exit 1
         rd /S /Q %DEST%\patches\.git %DEST%\patches\scripts
         del /Q %DEST%\patches\.git* %DEST%\patches\appveyor.yml

@@ -106,6 +106,9 @@ jobs:
   check-updates:
     runs-on: ubuntu-slim
 
+    # Don't run scheduled workflow on forks.
+    if: ${{ github.repository_owner == 'k-takata' || github.event_name != 'schedule' }}
+
     outputs:
       continue: ${{ steps.check.outputs.continue }}
       create-release: ${{ steps.check.outputs.create-release }}
@@ -195,7 +198,8 @@ jobs:
           fi
         else
           # Updates found
-          if [ "${{ github.ref_name }}" = 'master' ] || [ "${{github.event_name}}" = 'workflow_dispatch' ]; then
+          if { [ "${{ github.ref_name }}" = 'master' ] || [ "${{github.event_name}}" = 'workflow_dispatch' ]; } \
+              && [ "${{ github.repository_owner }}" = 'k-takata']; then
             echo "continue=yes" >> $GITHUB_OUTPUT
             echo "create-release=yes" >> $GITHUB_OUTPUT
           else

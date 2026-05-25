@@ -180,8 +180,6 @@ jobs:
     - name: Check changes
       id: check
       shell: bash
-      env:
-        GH_TOKEN: ${{ github.token }}
       run: |
         if git diff --exit-code HEAD vimver.txt; then
           # No updates found.
@@ -199,7 +197,7 @@ jobs:
         else
           # Updates found
           if { [ "${{ github.ref_name }}" = 'master' ] || [ "${{github.event_name}}" = 'workflow_dispatch' ]; } \
-              && [ "${{ github.repository_owner }}" = 'k-takata']; then
+              && [ "${{ github.repository_owner }}" = 'k-takata' ]; then
             echo "continue=yes" >> $GITHUB_OUTPUT
             echo "create-release=yes" >> $GITHUB_OUTPUT
           else

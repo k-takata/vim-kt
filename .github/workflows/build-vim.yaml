@@ -23,7 +23,6 @@ on:
         type: string
 
 permissions:
-  actions: write # to cancel a workflow run
   contents: read
 
 env:

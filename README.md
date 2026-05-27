@@ -30,7 +30,7 @@ The following source codes and patches are used to build this package:
 
 The following interfaces are enabled:
 
-* [LuaBinaries](http://luabinaries.sourceforge.net/download.html) 5.4 (included)
+* [LuaBinaries](https://luabinaries.sourceforge.net/download.html) 5.4 (included)
 * [Strawberry Perl](https://strawberryperl.com/)
   - 32-bit: 5.32
   - 64-bit: 5.42
